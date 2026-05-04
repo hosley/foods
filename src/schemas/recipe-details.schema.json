@@ -1,0 +1,63 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://example.com/recipe-details.schema.json",
+	"title": "RecipeDetails",
+	"type": "object",
+	"properties": {
+		"id": { "type": "string" },
+		"shoppingList": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"ingredientId": {
+						"type": "string",
+						"description": "Normalized ID for aggregating meal plans"
+					},
+					"displayName": {
+						"type": "string",
+						"description": "e.g., 'Boneless skinless chicken breasts'"
+					},
+					"quantity": { "type": "number" },
+					"unit": {
+						"type": "string",
+						"description": "e.g., 'lbs', 'cups', 'tbsp', 'cloves'"
+					}
+				},
+				"required": ["ingredientId", "displayName", "quantity", "unit"]
+			}
+		},
+		"steps": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"stepNumber": { "type": "integer" },
+					"instruction": { "type": "string", "description": "Freeform text" },
+					"timeMinutes": {
+						"type": "integer",
+						"description": "Approximate time if it is a timed step"
+					},
+					"equipmentUsed": {
+						"type": "array",
+						"items": { "type": "string" }
+					},
+					"ingredientsUsed": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"ingredientId": { "type": "string" },
+								"quantity": { "type": "number" },
+								"unit": { "type": "string" }
+							},
+							"required": ["ingredientId", "quantity", "unit"]
+						}
+					}
+				},
+				"required": ["stepNumber", "instruction"]
+			}
+		}
+	},
+	"required": ["id", "shoppingList", "steps"]
+}

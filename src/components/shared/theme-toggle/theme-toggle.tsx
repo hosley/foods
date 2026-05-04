@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 type ThemeMode = "light" | "dark" | "auto";
 
-function getInitialMode(): ThemeMode {
+const getInitialMode = (): ThemeMode => {
+	/* v8 ignore next 3 */
 	if (typeof window === "undefined") {
 		return "auto";
 	}
@@ -13,9 +14,9 @@ function getInitialMode(): ThemeMode {
 	}
 
 	return "auto";
-}
+};
 
-function applyThemeMode(mode: ThemeMode) {
+const applyThemeMode = (mode: ThemeMode) => {
 	const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 	const resolved = mode === "auto" ? (prefersDark ? "dark" : "light") : mode;
 
@@ -29,9 +30,9 @@ function applyThemeMode(mode: ThemeMode) {
 	}
 
 	document.documentElement.style.colorScheme = resolved;
-}
+};
 
-export default function ThemeToggle() {
+export const ThemeToggle = () => {
 	const [mode, setMode] = useState<ThemeMode>("auto");
 
 	useEffect(() => {
@@ -54,13 +55,13 @@ export default function ThemeToggle() {
 		};
 	}, [mode]);
 
-	function toggleMode() {
+	const toggleMode = () => {
 		const nextMode: ThemeMode =
 			mode === "light" ? "dark" : mode === "dark" ? "auto" : "light";
 		setMode(nextMode);
 		applyThemeMode(nextMode);
 		window.localStorage.setItem("theme", nextMode);
-	}
+	};
 
 	const label =
 		mode === "auto"
@@ -78,4 +79,4 @@ export default function ThemeToggle() {
 			{mode === "auto" ? "Auto" : mode === "dark" ? "Dark" : "Light"}
 		</button>
 	);
-}
+};

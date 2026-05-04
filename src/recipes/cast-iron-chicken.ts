@@ -5,12 +5,10 @@ export const castIronChicken: Recipe = {
 	title: "Sear-Roasted Chicken Thighs",
 	description:
 		"Perfectly crispy, juicy chicken thighs cooked in a Field Company machined cast iron skillet.",
-	summary: {
-		typeOfMeal: "Dinner",
-		typeOfProtein: "Chicken",
-		cookTimeMinutes: 25,
-		prepTimeMinutes: 10,
-	},
+	cuisine: "American",
+	primaryProtein: "Chicken",
+	prepTimeMinutes: 10,
+	cookTimeMinutes: 25,
 	ingredients: [
 		{
 			id: "ing-1",

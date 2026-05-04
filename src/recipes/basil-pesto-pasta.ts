@@ -5,12 +5,10 @@ export const basilPestoPasta: Recipe = {
 	title: "Fresh Basil Pesto Pasta",
 	description:
 		"A vibrant, herbaceous pesto tossed with al dente pasta and toasted pine nuts.",
-	summary: {
-		typeOfMeal: "Dinner",
-		typeOfProtein: "Vegetarian",
-		cookTimeMinutes: 15,
-		prepTimeMinutes: 15,
-	},
+	cuisine: "Italian",
+	primaryProtein: "Vegetarian",
+	prepTimeMinutes: 15,
+	cookTimeMinutes: 15,
 	ingredients: [
 		{
 			id: "ing-1",

@@ -1,0 +1,28 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
+
+const meta: Meta<typeof Card> = {
+	title: "Design System/Card",
+	component: Card,
+	tags: ["autodocs"],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+	render: () => (
+		<Card className="w-[350px]">
+			<CardHeader>
+				<CardTitle>Recipe Title</CardTitle>
+				<CardDescription>Cuisine Type</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<p>This is where the recipe details go.</p>
+			</CardContent>
+			<CardFooter>
+				<p>Prep: 10m | Cook: 20m</p>
+			</CardFooter>
+		</Card>
+	),
+};

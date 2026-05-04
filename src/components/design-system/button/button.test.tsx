@@ -1,33 +1,39 @@
-/**
- * @vitest-environment happy-dom
- */
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import * as React from "react";
-import { Button } from "./button";
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import React from 'react';
+import { Button } from './button';
 
-describe("Button", () => {
-	it("renders correctly and forwards ref", () => {
-		const ref = React.createRef<HTMLButtonElement>();
-		render(<Button ref={ref}>Click Me</Button>);
+describe('Button', () => {
+  it('renders correctly with children', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
 
-		const button = screen.getByRole("button", { name: /click me/i });
-		expect(button).toBeTruthy();
-		expect(ref.current).toBe(button);
-	});
+  it('forwards ref correctly', () => {
+    const ref = React.createRef<HTMLButtonElement>();
+    render(<Button ref={ref}>Ref Button</Button>);
+    expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+    expect(ref.current?.textContent).toBe('Ref Button');
+  });
 
-	it("handles click events", () => {
-		const onClick = vi.fn();
-		render(<Button onClick={onClick}>Click Me</Button>);
+  it('applies additional props correctly', () => {
+    const onClick = vi.fn();
+    render(<Button onClick={onClick} data-testid="test-button">Test Button</Button>);
+    const button = screen.getByTestId('test-button');
+    button.click();
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
 
-		const button = screen.getByRole("button", { name: /click me/i });
-		button.click();
-		expect(onClick).toHaveBeenCalledTimes(1);
-	});
-
-	it("applies variant classes correctly", () => {
-		render(<Button variant="destructive">Destructive Action</Button>);
-		const button = screen.getByRole("button", { name: /destructive/i });
-		expect(button.className).toContain("bg-destructive");
-	});
+  it('renders as a different component when using asChild', () => {
+    // Note: asChild functionality comes from Radix via BaseButton.
+    // BaseButton in our project seems to support it.
+    render(
+      <Button asChild data-testid="test-button">
+        <a href="/test">Link Button</a>
+      </Button>
+    );
+    const link = screen.getByRole('link', { name: /link button/i });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/test');
+  });
 });

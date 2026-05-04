@@ -1,0 +1,33 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://example.com/recipe-summary.schema.json",
+	"title": "RecipeSummaryIndex",
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"id": {
+				"type": "string",
+				"description": "Unique identifier, also the filename of the details JSON"
+			},
+			"title": { "type": "string" },
+			"cuisine": { "type": "string" },
+			"primaryProtein": {
+				"type": "string",
+				"description": "e.g., 'Chicken', 'Beef', 'Vegetarian'"
+			},
+			"totalTimeMinutes": { "type": "integer" },
+			"searchableIngredients": {
+				"type": "array",
+				"items": { "type": "string" },
+				"description": "Normalized names only (e.g., 'garlic', 'chicken breast') for search"
+			},
+			"searchableEquipment": {
+				"type": "array",
+				"items": { "type": "string" },
+				"description": "Normalized equipment names (e.g., 'blender', 'dutch oven')"
+			}
+		},
+		"required": ["id", "title", "cuisine", "totalTimeMinutes"]
+	}
+}
