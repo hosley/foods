@@ -17,5 +17,17 @@ export default defineConfig({
 			},
 		},
 	},
-	plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact(), compression({ algorithm: 'brotliCompress' })],
+	plugins: [
+		devtools(),
+		tailwindcss(),
+		tanstackStart({
+			pages: [{ path: '/' }],
+			prerender: {
+				crawlLinks: true,
+				enabled: true,
+			},
+		}),
+		viteReact(),
+		compression({ algorithm: 'brotliCompress' }),
+	],
 });
