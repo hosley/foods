@@ -19,10 +19,11 @@ jobs:
       - name: Setup Project
         uses: ./.github/actions/setup-node
 
-      - name: Check typing and formatting
-        run: |
-          pnpm check
-          pnpm lint
+      - name: Run TSC
+        run: pnpm run type-check
+
+      - name: Run Lint
+        run: pnpm lint
 
       - name: Run Tests
         run: pnpm test

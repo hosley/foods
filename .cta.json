@@ -1,19 +1,17 @@
 {
-  "projectName": "foods",
-  "mode": "file-router",
-  "typescript": true,
-  "tailwind": true,
-  "packageManager": "pnpm",
-  "git": false,
-  "install": true,
-  "intent": true,
-  "addOnOptions": {},
-  "includeExamples": true,
-  "envVarValues": {},
-  "routerOnly": false,
-  "version": 1,
-  "framework": "react",
-  "chosenAddOns": [
-    "biome"
-  ]
+	"addOnOptions": {},
+	"chosenAddOns": ["biome"],
+	"envVarValues": {},
+	"framework": "react",
+	"git": false,
+	"includeExamples": true,
+	"install": true,
+	"intent": true,
+	"mode": "file-router",
+	"packageManager": "pnpm",
+	"projectName": "foods",
+	"routerOnly": false,
+	"tailwind": true,
+	"typescript": true,
+	"version": 1
 }
