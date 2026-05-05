@@ -1,40 +1,41 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { ShoppingListPage } from "./shopping-list-page";
-import { Provider, createStore } from "jotai";
-import { savedRecipesAtom } from "../../../atoms/saved-recipes/saved-recipes";
+import type { Meta, StoryObj } from '@storybook/react';
 import {
+	createMemoryHistory,
 	createRootRoute,
 	createRoute,
 	createRouter,
 	RouterProvider,
-	createMemoryHistory,
-} from "@tanstack/react-router";
+} from '@tanstack/react-router';
+import { createStore, Provider } from 'jotai';
+import { savedRecipesAtom } from '../../../atoms/saved-recipes/saved-recipes';
+import { ShoppingListPage } from './shopping-list-page';
 
 const rootRoute = createRootRoute();
 const shoppingListRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/shopping-list",
 	component: ShoppingListPage,
+	getParentRoute: () => rootRoute,
+	path: '/shopping-list',
 });
 const routeTree = rootRoute.addChildren([shoppingListRoute]);
-const history = createMemoryHistory({ initialEntries: ["/shopping-list"] });
-const router = createRouter({ routeTree, history });
+const history = createMemoryHistory({ initialEntries: ['/shopping-list'] });
+const router = createRouter({ history, routeTree });
 
 const meta: Meta<typeof ShoppingListPage> = {
-	title: "Features/ShoppingListPage",
 	component: ShoppingListPage,
 	decorators: [
-		(Story) => {
+		Story => {
 			const store = createStore();
-			store.set(savedRecipesAtom, ["basil-pesto-pasta"]);
+			store.set(savedRecipesAtom, ['basil-pesto-pasta']);
 			return (
 				<Provider store={store}>
-				        <RouterProvider router={router as any}>
-				                <Story />
-				        </RouterProvider>
-				</Provider>			);
+					<RouterProvider router={router as any}>
+						<Story />
+					</RouterProvider>
+				</Provider>
+			);
 		},
 	],
+	title: 'Features/ShoppingListPage',
 };
 
 export default meta;
@@ -44,14 +45,15 @@ export const Default: Story = {};
 
 export const Empty: Story = {
 	decorators: [
-		(Story) => {
+		Story => {
 			const store = createStore();
 			return (
 				<Provider store={store}>
-				        <RouterProvider router={router as any}>
-				                <Story />
-				        </RouterProvider>
-				</Provider>			);
+					<RouterProvider router={router as any}>
+						<Story />
+					</RouterProvider>
+				</Provider>
+			);
 		},
 	],
 };

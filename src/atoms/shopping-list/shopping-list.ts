@@ -1,14 +1,14 @@
-import { atom } from "jotai";
-import { savedRecipesAtom } from "../saved-recipes/saved-recipes";
-import { getRecipeById } from "../../selectors/get-recipe-by-id/get-recipe-by-id";
+import { atom } from 'jotai';
+import { getRecipeById } from '../../selectors/get-recipe-by-id/get-recipe-by-id';
+import { savedRecipesAtom } from '../saved-recipes/saved-recipes';
 
 export interface AggregatedIngredient {
+	measurement: string;
 	name: string;
 	quantity: number;
-	measurement: string;
 }
 
-export const shoppingListAtom = atom<AggregatedIngredient[]>((get) => {
+export const shoppingListAtom = atom<AggregatedIngredient[]>(get => {
 	const savedRecipeIds = get(savedRecipesAtom);
 
 	const ingredientMap = savedRecipeIds.reduce((acc, id) => {
@@ -17,7 +17,7 @@ export const shoppingListAtom = atom<AggregatedIngredient[]>((get) => {
 			return acc;
 		}
 
-		recipe.ingredients.forEach((ingredient) => {
+		recipe.ingredients.forEach(ingredient => {
 			const key = `${ingredient.name.toLowerCase()}-${ingredient.measurement.toLowerCase()}`;
 			const existing = acc.get(key);
 
@@ -28,9 +28,9 @@ export const shoppingListAtom = atom<AggregatedIngredient[]>((get) => {
 				});
 			} else {
 				acc.set(key, {
+					measurement: ingredient.measurement,
 					name: ingredient.name,
 					quantity: ingredient.quantity,
-					measurement: ingredient.measurement,
 				});
 			}
 		});

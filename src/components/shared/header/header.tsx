@@ -1,9 +1,6 @@
-import { Link } from "@tanstack/react-router";
-import { ThemeToggle } from "../theme-toggle/theme-toggle";
-import {
-	getCommonContent,
-	getNavContent,
-} from '../../../selectors/get-content/get-content';
+import { Link } from '@tanstack/react-router';
+import { getCommonContent, getNavContent } from '../../../selectors/get-content/get-content';
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 
 export const Header = () => {
 	const common = getCommonContent();
@@ -14,8 +11,8 @@ export const Header = () => {
 			<nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
 				<h2 className="m-0 flex-shrink-0 text-base font-semibold tracking-tight">
 					<Link
-						to="/"
 						className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)] sm:px-4 sm:py-2"
+						to="/"
 					>
 						<span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
 						<span className="flex">
@@ -30,18 +27,10 @@ export const Header = () => {
 				</div>
 
 				<div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-2 sm:w-auto sm:flex-nowrap sm:pb-0">
-					<Link
-						to="/"
-						className="nav-link"
-						activeProps={{ className: 'nav-link is-active' }}
-					>
+					<Link activeProps={{ className: 'nav-link is-active' }} className="nav-link" to="/">
 						{nav.home}
 					</Link>
-					<Link
-						to="/shopping-list"
-						className="nav-link"
-						activeProps={{ className: 'nav-link is-active' }}
-					>
+					<Link activeProps={{ className: 'nav-link is-active' }} className="nav-link" to="/shopping-list">
 						{nav.shoppingList}
 					</Link>
 				</div>

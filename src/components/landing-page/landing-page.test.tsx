@@ -1,32 +1,33 @@
 /**
  * @vitest-environment happy-dom
  */
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+
 import {
+	createMemoryHistory,
 	createRootRoute,
 	createRoute,
 	createRouter,
 	RouterProvider,
-	createMemoryHistory,
-} from "@tanstack/react-router";
-import { LandingPage } from "./landing-page";
+} from '@tanstack/react-router';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { LandingPage } from './landing-page';
 
-describe("LandingPage", () => {
-	it("renders a list of recipes", async () => {
+describe('LandingPage', () => {
+	it('renders a list of recipes', async () => {
 		const rootRoute = createRootRoute();
 		const indexRoute = createRoute({
-			getParentRoute: () => rootRoute,
-			path: "/",
 			component: LandingPage,
+			getParentRoute: () => rootRoute,
+			path: '/',
 		});
 		const routeTree = rootRoute.addChildren([indexRoute]);
-		const history = createMemoryHistory({ initialEntries: ["/"] });
-		const router = createRouter({ routeTree, history });
+		const history = createMemoryHistory({ initialEntries: ['/'] });
+		const router = createRouter({ history, routeTree });
 
 		render(<RouterProvider router={router} />);
 
 		expect(await screen.findByText(/Discover Exceptional Recipes/i)).toBeTruthy();
-		expect(screen.getAllByRole("link").length).toBeGreaterThan(0);
+		expect(screen.getAllByRole('link').length).toBeGreaterThan(0);
 	});
 });

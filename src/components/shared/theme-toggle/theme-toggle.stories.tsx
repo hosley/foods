@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { ThemeToggle } from "./theme-toggle";
+import type { Meta, StoryObj } from '@storybook/react';
+import { ThemeToggle } from './theme-toggle';
 
 const meta: Meta<typeof ThemeToggle> = {
-	title: "Shared/ThemeToggle",
 	component: ThemeToggle,
-	tags: ["autodocs"],
+	tags: ['autodocs'],
+	title: 'Shared/ThemeToggle',
 };
 
 export default meta;

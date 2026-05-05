@@ -1,4 +1,4 @@
-import { AppContent } from "../../constants/content";
+import { AppContent } from '../../constants/content';
 
 export const getContent = () => AppContent;
 

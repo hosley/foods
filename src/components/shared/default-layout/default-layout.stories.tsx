@@ -1,38 +1,39 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { DefaultLayout } from "./default-layout";
+import type { Meta, StoryObj } from '@storybook/react';
 import {
+	createMemoryHistory,
 	createRootRoute,
 	createRoute,
 	createRouter,
 	RouterProvider,
-	createMemoryHistory,
-} from "@tanstack/react-router";
+} from '@tanstack/react-router';
+import { DefaultLayout } from './default-layout';
 
 const rootRoute = createRootRoute({
 	component: DefaultLayout,
 });
 const indexRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/",
 	component: () => <div>Content goes here</div>,
+	getParentRoute: () => rootRoute,
+	path: '/',
 });
 const routeTree = rootRoute.addChildren([indexRoute]);
-const history = createMemoryHistory({ initialEntries: ["/"] });
-const router = createRouter({ routeTree, history });
+const history = createMemoryHistory({ initialEntries: ['/'] });
+const router = createRouter({ history, routeTree });
 
 const meta: Meta<typeof DefaultLayout> = {
-	title: "Shared/DefaultLayout",
 	component: DefaultLayout,
-	parameters: {
-		layout: "fullscreen",
-	},
 	decorators: [
-			(Story) => (
-					<RouterProvider router={router as any}>
-							<Story />
-					</RouterProvider>
-			),
-	],};
+		Story => (
+			<RouterProvider router={router as any}>
+				<Story />
+			</RouterProvider>
+		),
+	],
+	parameters: {
+		layout: 'fullscreen',
+	},
+	title: 'Shared/DefaultLayout',
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;

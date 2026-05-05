@@ -1,12 +1,11 @@
-
 import {
 	Card as BaseCard,
+	CardContent as BaseCardContent,
+	CardDescription as BaseCardDescription,
+	CardFooter as BaseCardFooter,
 	CardHeader as BaseCardHeader,
 	CardTitle as BaseCardTitle,
-	CardDescription as BaseCardDescription,
-	CardContent as BaseCardContent,
-	CardFooter as BaseCardFooter,
-} from "../../ui/card";
+} from '../../ui/card';
 
 export const Card = BaseCard;
 export const CardHeader = BaseCardHeader;

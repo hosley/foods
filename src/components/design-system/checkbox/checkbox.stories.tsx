@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { Checkbox } from "./checkbox";
-import { Label } from "../label/label";
+import type { Meta, StoryObj } from '@storybook/react';
+import { Label } from '../label/label';
+import { Checkbox } from './checkbox';
 
 const meta: Meta<typeof Checkbox> = {
-	title: "Design System/Checkbox",
 	component: Checkbox,
-	tags: ["autodocs"],
+	tags: ['autodocs'],
+	title: 'Design System/Checkbox',
 };
 
 export default meta;

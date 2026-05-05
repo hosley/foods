@@ -1,29 +1,29 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id": "https://example.com/meal-plan.schema.json",
-	"title": "WeeklyMealPlan",
-	"type": "object",
+	"$schema": "http://json-schema.org/draft-07/schema#",
 	"properties": {
-		"weekOf": {
-			"type": "string",
-			"format": "date"
-		},
-		"selectedRecipeIds": {
-			"type": "array",
-			"items": { "type": "string" }
-		},
 		"aggregatedShoppingList": {
-			"type": "array",
 			"items": {
-				"type": "object",
 				"properties": {
 					"ingredientId": { "type": "string" },
 					"totalQuantity": { "type": "number" },
 					"unit": { "type": "string" }
 				},
-				"required": ["ingredientId", "totalQuantity", "unit"]
-			}
+				"required": ["ingredientId", "totalQuantity", "unit"],
+				"type": "object"
+			},
+			"type": "array"
+		},
+		"selectedRecipeIds": {
+			"items": { "type": "string" },
+			"type": "array"
+		},
+		"weekOf": {
+			"format": "date",
+			"type": "string"
 		}
 	},
-	"required": ["weekOf", "selectedRecipeIds", "aggregatedShoppingList"]
+	"required": ["weekOf", "selectedRecipeIds", "aggregatedShoppingList"],
+	"title": "WeeklyMealPlan",
+	"type": "object"
 }

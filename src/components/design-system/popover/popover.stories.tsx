@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { Popover, PopoverTrigger, PopoverContent } from "./popover";
-import { Button } from "../button/button";
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from '../button/button';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 const meta: Meta<typeof Popover> = {
-	title: "Design System/Popover",
 	component: Popover,
-	tags: ["autodocs"],
+	tags: ['autodocs'],
+	title: 'Design System/Popover',
 };
 
 export default meta;
@@ -14,9 +14,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
 	render: () => (
 		<Popover>
-			<PopoverTrigger render={<Button variant="outline" />}>
-				Open Popover
-			</PopoverTrigger>
+			<PopoverTrigger render={<Button variant="outline" />}>Open Popover</PopoverTrigger>
 			<PopoverContent>
 				<div className="grid gap-4">
 					<div className="space-y-2">

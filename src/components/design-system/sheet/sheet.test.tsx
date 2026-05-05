@@ -1,11 +1,11 @@
 /**
  * @vitest-environment happy-dom
  */
-import { describe, it, expect } from "vitest";
-import * as SheetModule from "./sheet";
+import { describe, expect, it } from 'vitest';
+import * as SheetModule from './sheet';
 
-describe("Sheet", () => {
-	it("is exported correctly", () => {
+describe('Sheet', () => {
+	it('is exported correctly', () => {
 		expect(SheetModule.Sheet).toBeDefined();
 		expect(SheetModule.SheetTrigger).toBeDefined();
 		expect(SheetModule.SheetClose).toBeDefined();

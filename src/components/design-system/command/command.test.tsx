@@ -1,11 +1,11 @@
 /**
  * @vitest-environment happy-dom
  */
-import { describe, it, expect } from "vitest";
-import * as CommandModule from "./command";
+import { describe, expect, it } from 'vitest';
+import * as CommandModule from './command';
 
-describe("Command", () => {
-	it("is exported correctly", () => {
+describe('Command', () => {
+	it('is exported correctly', () => {
 		expect(CommandModule.Command).toBeDefined();
 		expect(CommandModule.CommandInput).toBeDefined();
 		expect(CommandModule.CommandList).toBeDefined();

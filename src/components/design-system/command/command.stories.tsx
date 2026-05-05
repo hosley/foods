@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./command";
+import type { Meta, StoryObj } from '@storybook/react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './command';
 
 const meta: Meta<typeof Command> = {
-	title: "Design System/Command",
 	component: Command,
-	tags: ["autodocs"],
+	tags: ['autodocs'],
+	title: 'Design System/Command',
 };
 
 export default meta;

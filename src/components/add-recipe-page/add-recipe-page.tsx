@@ -1,29 +1,12 @@
-import * as React from 'react';
 import { useForm } from '@tanstack/react-form';
-import { Plus, Trash2, Copy, Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Copy, Plus, Trash2 } from 'lucide-react';
+import * as React from 'react';
+import { parseQuantity, toTitleCase } from '../../lib/utils';
+import { type Recipe, RecipeSchema } from '../../recipes/schema';
+import { getAddRecipeContent } from '../../selectors/get-content/get-content';
 import { Button } from '../design-system/button/button';
-import { Input } from '../design-system/input/input';
-import { Textarea } from '../design-system/textarea/textarea';
-import { Label } from '../design-system/label/label';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '../design-system/card/card';
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from '../design-system/sheet/sheet';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '../design-system/popover/popover';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../design-system/card/card';
+import { Checkbox } from '../design-system/checkbox/checkbox';
 import {
 	Command,
 	CommandEmpty,
@@ -32,21 +15,22 @@ import {
 	CommandItem,
 	CommandList,
 } from '../design-system/command/command';
-import { Checkbox } from '../design-system/checkbox/checkbox';
-import { RecipeSchema, type Recipe } from '../../recipes/schema';
-import { parseQuantity, toTitleCase } from '../../lib/utils';
-import { getAddRecipeContent } from '../../selectors/get-content/get-content';
+import { Input } from '../design-system/input/input';
+import { Label } from '../design-system/label/label';
+import { Popover, PopoverContent, PopoverTrigger } from '../design-system/popover/popover';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '../design-system/sheet/sheet';
+import { Textarea } from '../design-system/textarea/textarea';
 
 const createEmptyRecipe = (): Recipe => ({
-	id: crypto.randomUUID(),
-	title: '',
-	description: '',
-	cuisine: '',
-	primaryProtein: '',
-	prepTimeMinutes: 0,
 	cookTimeMinutes: 0,
+	cuisine: '',
+	description: '',
+	id: crypto.randomUUID(),
 	ingredients: [],
+	prepTimeMinutes: 0,
+	primaryProtein: '',
 	steps: [],
+	title: '',
 });
 
 export const AddRecipePage = () => {
@@ -56,29 +40,23 @@ export const AddRecipePage = () => {
 	const [isSheetOpen, setIsSheetOpen] = React.useState(false);
 
 	// Local states for text-based quantity inputs to allow fractions/decimals
-	const [quantityInputs, setQuantityInputs] = React.useState<
-		Record<string, string>
-	>({});
+	const [quantityInputs, setQuantityInputs] = React.useState<Record<string, string>>({});
 	const [prepTimeInput, setPrepTimeInput] = React.useState('');
 	const [cookTimeInput, setCookTimeInput] = React.useState('');
 
 	const form = useForm({
 		defaultValues: createEmptyRecipe(),
-		validators: {
-			onSubmit: RecipeSchema,
-		},
 		onSubmit: async ({ value }) => {
 			// Format ingredients to lowercase for storage
 			const formattedValue = {
 				...value,
-				ingredients: value.ingredients.map((i) => ({
+				ingredients: value.ingredients.map(i => ({
 					...i,
 					name: i.name.toLowerCase(),
 				})),
 			};
 
-			const variableName =
-				value.title.replace(/\s+/g, '_').toLowerCase() || 'newRecipe';
+			const variableName = value.title.replace(/\s+/g, '_').toLowerCase() || 'newRecipe';
 
 			const formatted = `import type { Recipe } from "./schema";
 
@@ -86,6 +64,9 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 `;
 			setOutput(formatted);
 			setIsSheetOpen(true);
+		},
+		validators: {
+			onSubmit: RecipeSchema,
 		},
 	});
 
@@ -103,19 +84,17 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 	return (
 		<div className="flex flex-col gap-8 max-w-4xl mx-auto pb-20">
 			<header className="space-y-2">
-				<h1 className="text-3xl font-bold font-heading text-sea-ink">
-					{content.title}
-				</h1>
+				<h1 className="text-3xl font-bold font-heading text-sea-ink">{content.title}</h1>
 				<p className="text-sea-ink-soft">{content.description}</p>
 			</header>
 
 			<form
-				onSubmit={(e) => {
+				className="space-y-6"
+				onSubmit={e => {
 					e.preventDefault();
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="space-y-6"
 			>
 				<Card>
 					<CardHeader>
@@ -125,17 +104,15 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
 							<form.Field name="title">
-								{(field) => (
+								{field => (
 									<>
-										<Label htmlFor={field.name}>
-											{sections.basicInfo.fields.title}
-										</Label>
+										<Label htmlFor={field.name}>{sections.basicInfo.fields.title}</Label>
 										<Input
 											id={field.name}
-											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
+											onChange={e => field.handleChange(e.target.value)}
 											placeholder="Fresh Basil Pesto Pasta"
+											value={field.state.value}
 										/>
 									</>
 								)}
@@ -144,17 +121,15 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 
 						<div className="space-y-2">
 							<form.Field name="description">
-								{(field) => (
+								{field => (
 									<>
-										<Label htmlFor={field.name}>
-											{sections.basicInfo.fields.description}
-										</Label>
+										<Label htmlFor={field.name}>{sections.basicInfo.fields.description}</Label>
 										<Textarea
 											id={field.name}
-											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
+											onChange={e => field.handleChange(e.target.value)}
 											placeholder="A vibrant, herbaceous pesto tossed with al dente pasta..."
+											value={field.state.value}
 										/>
 									</>
 								)}
@@ -164,17 +139,15 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<form.Field name="cuisine">
-									{(field) => (
+									{field => (
 										<>
-											<Label htmlFor={field.name}>
-												{sections.basicInfo.fields.cuisine}
-											</Label>
+											<Label htmlFor={field.name}>{sections.basicInfo.fields.cuisine}</Label>
 											<Input
 												id={field.name}
-												value={field.state.value}
 												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
+												onChange={e => field.handleChange(e.target.value)}
 												placeholder="Italian"
+												value={field.state.value}
 											/>
 										</>
 									)}
@@ -182,17 +155,15 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 							</div>
 							<div className="space-y-2">
 								<form.Field name="primaryProtein">
-									{(field) => (
+									{field => (
 										<>
-											<Label htmlFor={field.name}>
-												{sections.basicInfo.fields.primaryProtein}
-											</Label>
+											<Label htmlFor={field.name}>{sections.basicInfo.fields.primaryProtein}</Label>
 											<Input
 												id={field.name}
-												value={field.state.value}
 												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
+												onChange={e => field.handleChange(e.target.value)}
 												placeholder="Chicken"
+												value={field.state.value}
 											/>
 										</>
 									)}
@@ -203,22 +174,20 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<form.Field name="prepTimeMinutes">
-									{(field) => (
+									{field => (
 										<>
-											<Label htmlFor={field.name}>
-												{sections.basicInfo.fields.prepTime}
-											</Label>
+											<Label htmlFor={field.name}>{sections.basicInfo.fields.prepTime}</Label>
 											<Input
 												id={field.name}
-												value={prepTimeInput}
 												onBlur={() => {
 													field.handleBlur();
 													const val = parseQuantity(prepTimeInput);
 													field.handleChange(val);
 													setPrepTimeInput(val.toString());
 												}}
-												onChange={(e) => setPrepTimeInput(e.target.value)}
+												onChange={e => setPrepTimeInput(e.target.value)}
 												placeholder="10"
+												value={prepTimeInput}
 											/>
 										</>
 									)}
@@ -226,22 +195,20 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 							</div>
 							<div className="space-y-2">
 								<form.Field name="cookTimeMinutes">
-									{(field) => (
+									{field => (
 										<>
-											<Label htmlFor={field.name}>
-												{sections.basicInfo.fields.cookTime}
-											</Label>
+											<Label htmlFor={field.name}>{sections.basicInfo.fields.cookTime}</Label>
 											<Input
 												id={field.name}
-												value={cookTimeInput}
 												onBlur={() => {
 													field.handleBlur();
 													const val = parseQuantity(cookTimeInput);
 													field.handleChange(val);
 													setCookTimeInput(val.toString());
 												}}
-												onChange={(e) => setCookTimeInput(e.target.value)}
+												onChange={e => setCookTimeInput(e.target.value)}
 												placeholder="25"
+												value={cookTimeInput}
 											/>
 										</>
 									)}
@@ -257,20 +224,20 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 							<CardTitle>{sections.ingredients.title}</CardTitle>
 							<CardDescription>{sections.ingredients.description}</CardDescription>
 						</div>
-						<form.Field name="ingredients" mode="array">
-							{(field) => (
+						<form.Field mode="array" name="ingredients">
+							{field => (
 								<Button
-									type="button"
-									variant="outline"
-									size="sm"
 									onClick={() =>
 										field.pushValue({
 											id: `ing-${crypto.randomUUID().slice(0, 8)}`,
+											measurement: '',
 											name: '',
 											quantity: 0,
-											measurement: '',
 										})
 									}
+									size="sm"
+									type="button"
+									variant="outline"
 								>
 									<Plus className="h-4 w-4 mr-2" /> {sections.ingredients.addButton}
 								</Button>
@@ -279,47 +246,36 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<form.Field
-							name="ingredients"
 							mode="array"
+							name="ingredients"
 							validators={{
 								onSubmit: ({ value, fieldApi }) => {
 									const steps = fieldApi.form.getFieldValue('steps');
-									const usedIngredientIds = new Set(
-										steps.flatMap((s) => s.ingredientIds),
-									);
-									const unusedIngredients = value.filter(
-										(i) => !usedIngredientIds.has(i.id),
-									);
+									const usedIngredientIds = new Set(steps.flatMap(s => s.ingredientIds));
+									const unusedIngredients = value.filter(i => !usedIngredientIds.has(i.id));
 
 									if (unusedIngredients.length > 0) {
-										return `${content.errorPrefix} ${unusedIngredients.map((i) => toTitleCase(i.name) || i.id).join(', ')}`;
+										return `${content.errorPrefix} ${unusedIngredients.map(i => toTitleCase(i.name) || i.id).join(', ')}`;
 									}
 									return undefined;
 								},
 							}}
 						>
-							{(field) => (
+							{field => (
 								<div className="space-y-4">
 									{field.state.value.map((item, i) => (
-										<div
-											key={item.id}
-											className="flex gap-4 items-end border-b border-line pb-4 last:border-0"
-										>
+										<div className="flex gap-4 items-end border-b border-line pb-4 last:border-0" key={item.id}>
 											<div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
 												<div className="space-y-2">
 													<form.Field name={`ingredients[${i}].name`}>
-														{(subField) => (
+														{subField => (
 															<>
-																<Label htmlFor={subField.name}>
-																	{sections.ingredients.fields.name}
-																</Label>
+																<Label htmlFor={subField.name}>{sections.ingredients.fields.name}</Label>
 																<Input
 																	id={subField.name}
-																	value={subField.state.value}
-																	onChange={(e) =>
-																		subField.handleChange(e.target.value)
-																	}
+																	onChange={e => subField.handleChange(e.target.value)}
 																	placeholder="Fresh basil"
+																	value={subField.state.value}
 																/>
 															</>
 														)}
@@ -327,32 +283,28 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 												</div>
 												<div className="space-y-2">
 													<form.Field name={`ingredients[${i}].quantity`}>
-														{(subField) => (
+														{subField => (
 															<>
-																<Label htmlFor={subField.name}>
-																	{sections.ingredients.fields.quantity}
-																</Label>
+																<Label htmlFor={subField.name}>{sections.ingredients.fields.quantity}</Label>
 																<Input
 																	id={subField.name}
-																	value={quantityInputs[item.id] ?? ''}
 																	onBlur={() => {
 																		subField.handleBlur();
-																		const val = parseQuantity(
-																			quantityInputs[item.id] || '0',
-																		);
+																		const val = parseQuantity(quantityInputs[item.id] || '0');
 																		subField.handleChange(val);
-																		setQuantityInputs((prev) => ({
+																		setQuantityInputs(prev => ({
 																			...prev,
 																			[item.id]: val.toString(),
 																		}));
 																	}}
-																	onChange={(e) =>
-																		setQuantityInputs((prev) => ({
+																	onChange={e =>
+																		setQuantityInputs(prev => ({
 																			...prev,
 																			[item.id]: e.target.value,
 																		}))
 																	}
 																	placeholder="1/2"
+																	value={quantityInputs[item.id] ?? ''}
 																/>
 															</>
 														)}
@@ -360,18 +312,14 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 												</div>
 												<div className="space-y-2">
 													<form.Field name={`ingredients[${i}].measurement`}>
-														{(subField) => (
+														{subField => (
 															<>
-																<Label htmlFor={subField.name}>
-																	{sections.ingredients.fields.measurement}
-																</Label>
+																<Label htmlFor={subField.name}>{sections.ingredients.fields.measurement}</Label>
 																<Input
 																	id={subField.name}
-																	value={subField.state.value}
-																	onChange={(e) =>
-																		subField.handleChange(e.target.value)
-																	}
+																	onChange={e => subField.handleChange(e.target.value)}
 																	placeholder="cups"
+																	value={subField.state.value}
 																/>
 															</>
 														)}
@@ -379,20 +327,18 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 												</div>
 											</div>
 											<Button
-												type="button"
-												variant="destructive"
-												size="icon"
 												aria-label="Remove ingredient"
 												onClick={() => field.removeValue(i)}
+												size="icon"
+												type="button"
+												variant="destructive"
 											>
 												<Trash2 className="h-4 w-4" />
 											</Button>
 										</div>
 									))}
 									{field.state.meta.errors.length > 0 && (
-										<p className="text-sm font-medium text-destructive mt-2">
-											{field.state.meta.errors.join(', ')}
-										</p>
+										<p className="text-sm font-medium text-destructive mt-2">{field.state.meta.errors.join(', ')}</p>
 									)}
 								</div>
 							)}
@@ -406,19 +352,19 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 							<CardTitle>{sections.steps.title}</CardTitle>
 							<CardDescription>{sections.steps.description}</CardDescription>
 						</div>
-						<form.Field name="steps" mode="array">
-							{(field) => (
+						<form.Field mode="array" name="steps">
+							{field => (
 								<Button
-									type="button"
-									variant="outline"
-									size="sm"
 									onClick={() =>
 										field.pushValue({
 											id: `step-${crypto.randomUUID().slice(0, 8)}`,
-											instruction: '',
 											ingredientIds: [],
+											instruction: '',
 										})
 									}
+									size="sm"
+									type="button"
+									variant="outline"
 								>
 									<Plus className="h-4 w-4 mr-2" /> {sections.steps.addButton}
 								</Button>
@@ -426,51 +372,38 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 						</form.Field>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<form.Field name="steps" mode="array">
-							{(field) => (
+						<form.Field mode="array" name="steps">
+							{field => (
 								<div className="space-y-6">
 									{field.state.value.map((item, i) => (
-										<div
-											key={item.id}
-											className="space-y-4 border-b border-line pb-6 last:border-0"
-										>
+										<div className="space-y-4 border-b border-line pb-6 last:border-0" key={item.id}>
 											<div className="flex gap-4 items-start">
 												<div className="flex-shrink-0 w-8 h-8 rounded-full bg-palm text-white flex items-center justify-center font-bold text-sm">
 													{i + 1}
 												</div>
 												<div className="flex-1 space-y-4">
 													<form.Field name={`steps[${i}].instruction`}>
-														{(subField) => (
+														{subField => (
 															<>
-																<Label htmlFor={subField.name}>
-																	{sections.steps.fields.instruction}
-																</Label>
+																<Label htmlFor={subField.name}>{sections.steps.fields.instruction}</Label>
 																<Textarea
 																	id={subField.name}
-																	value={subField.state.value}
-																	onChange={(e) =>
-																		subField.handleChange(e.target.value)
-																	}
+																	onChange={e => subField.handleChange(e.target.value)}
 																	placeholder="Bring a large pot of salted water to a boil..."
+																	value={subField.state.value}
 																/>
 															</>
 														)}
 													</form.Field>
 													<div className="space-y-2">
 														<form.Field name={`steps[${i}].ingredientIds`}>
-															{(subField) => (
+															{subField => (
 																<div className="space-y-2">
-																	<Label>
-																		{sections.steps.fields.relatedIngredients}
-																	</Label>
+																	<Label>{sections.steps.fields.relatedIngredients}</Label>
 																	<Popover>
 																		<PopoverTrigger
 																			render={
-																				<Button
-																					variant="outline"
-																					role="combobox"
-																					className="w-full justify-between"
-																				/>
+																				<Button className="w-full justify-between" role="combobox" variant="outline" />
 																			}
 																		>
 																			{subField.state.value.length > 0
@@ -480,37 +413,27 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 																		</PopoverTrigger>
 																		<PopoverContent className="w-[400px] p-0">
 																			<Command>
-																				<CommandInput
-																					placeholder={sections.steps.fields.searchPlaceholder}
-																				/>
+																				<CommandInput placeholder={sections.steps.fields.searchPlaceholder} />
 																				<CommandList>
-																					<CommandEmpty>
-																						{sections.steps.fields.emptyResults}
-																					</CommandEmpty>
+																					<CommandEmpty>{sections.steps.fields.emptyResults}</CommandEmpty>
 																					<CommandGroup>
-																						{form
-																							.getFieldValue('ingredients')
-																							.map((ing) => (
-																								<CommandItem
-																									key={ing.id}
-																									onSelect={() => {
-																										const current = subField.state.value;
-																										const next = current.includes(ing.id)
-																											? current.filter((id) => id !== ing.id)
-																											: [...current, ing.id];
-																										subField.handleChange(next);
-																									}}
-																								>
-																									<div className="flex items-center gap-2">
-																										<Checkbox
-																											checked={subField.state.value.includes(
-																												ing.id,
-																											)}
-																										/>
-																										{toTitleCase(ing.name || ing.id)}
-																									</div>
-																								</CommandItem>
-																							))}
+																						{form.getFieldValue('ingredients').map(ing => (
+																							<CommandItem
+																								key={ing.id}
+																								onSelect={() => {
+																									const current = subField.state.value;
+																									const next = current.includes(ing.id)
+																										? current.filter(id => id !== ing.id)
+																										: [...current, ing.id];
+																									subField.handleChange(next);
+																								}}
+																							>
+																								<div className="flex items-center gap-2">
+																									<Checkbox checked={subField.state.value.includes(ing.id)} />
+																									{toTitleCase(ing.name || ing.id)}
+																								</div>
+																							</CommandItem>
+																						))}
 																					</CommandGroup>
 																				</CommandList>
 																			</Command>
@@ -522,11 +445,11 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 													</div>
 												</div>
 												<Button
-													type="button"
-													variant="destructive"
-													size="icon"
 													aria-label="Remove step"
 													onClick={() => field.removeValue(i)}
+													size="icon"
+													type="button"
+													variant="destructive"
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -539,30 +462,20 @@ export const ${variableName}: Recipe = ${JSON.stringify(formattedValue, null, '\
 					</CardContent>
 				</Card>
 
-				<Button type="submit" size="lg" className="w-full font-bold">
+				<Button className="w-full font-bold" size="lg" type="submit">
 					{content.submitButton}
 				</Button>
 			</form>
 
-			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-				<SheetContent side="right" className="sm:max-w-xl">
+			<Sheet onOpenChange={setIsSheetOpen} open={isSheetOpen}>
+				<SheetContent className="sm:max-w-xl" side="right">
 					<SheetHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
 						<div className="space-y-1">
 							<SheetTitle>{content.sheet.title}</SheetTitle>
 							<SheetDescription>{content.sheet.description}</SheetDescription>
 						</div>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onClick={copyToClipboard}
-							className="shrink-0"
-						>
-							{copied ? (
-								<Check className="h-4 w-4 mr-2 text-green-500" />
-							) : (
-								<Copy className="h-4 w-4 mr-2" />
-							)}
+						<Button className="shrink-0" onClick={copyToClipboard} size="sm" type="button" variant="outline">
+							{copied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}
 							{copied ? content.sheet.copiedButton : content.sheet.copyButton}
 						</Button>
 					</SheetHeader>

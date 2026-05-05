@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { Footer } from "./footer";
+import type { Meta, StoryObj } from '@storybook/react';
+import { Footer } from './footer';
 
 const meta: Meta<typeof Footer> = {
-	title: "Shared/Footer",
 	component: Footer,
-	tags: ["autodocs"],
+	tags: ['autodocs'],
+	title: 'Shared/Footer',
 };
 
 export default meta;

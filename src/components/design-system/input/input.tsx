@@ -1,11 +1,14 @@
-import * as React from "react";
-import { Input as BaseInput } from "../../ui/input";
+import type * as React from 'react';
+import { Input as BaseInput } from '../../ui/input';
 
-export interface InputProps extends React.ComponentProps<"input"> {}
+export interface InputProps extends React.ComponentProps<'input'> {}
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-	({ className, type, ...props }, ref) => {
-		return <BaseInput ref={ref} type={type} className={className} {...props} />;
-	},
-);
-Input.displayName = "Input";
+export const Input = ({
+	className,
+	type,
+	ref,
+	...props
+}: InputProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
+	return <BaseInput className={className} ref={ref} type={type} {...props} />;
+};
+Input.displayName = 'Input';

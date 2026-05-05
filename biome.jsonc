@@ -1,0 +1,134 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on",
+				"useSortedAttributes": "on",
+				"useSortedInterfaceMembers": "on",
+				"useSortedKeys": "on",
+				"useSortedProperties": "on"
+			}
+		}
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**/.vscode/**/*",
+			"**/biome.jsonc",
+			"**/index.html",
+			"**/src/**/*",
+			"!**/src/components/ui/**/*",
+			"!**/src/routeTree.gen.ts",
+			"!**/src/styles.css",
+			"**/vite.config.ts",
+			"package.json"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 120
+	},
+	"javascript": {
+		"formatter": {
+			"arrowParentheses": "asNeeded",
+			"quoteStyle": "single",
+			"semicolons": "always"
+		}
+	},
+	"linter": {
+		"domains": {
+			"react": "all",
+			"test": "all"
+		},
+		"enabled": true,
+		"rules": {
+			"a11y": {
+				"useValidAriaRole": {
+					"level": "error",
+					"options": {
+						"ignoreNonDom": true
+					}
+				}
+			},
+			"complexity": {
+				"noExcessiveCognitiveComplexity": {
+					"level": "error",
+					"options": {
+						"maxAllowedComplexity": 15
+					}
+				}
+			},
+			"correctness": {
+				"noUnusedImports": {
+					"fix": "none",
+					"level": "error"
+				},
+				"noUnusedVariables": {
+					"fix": "none",
+					"level": "error"
+				},
+				"useExhaustiveDependencies": "error",
+				"useHookAtTopLevel": "error"
+			},
+			"performance": {
+				"noBarrelFile": {
+					"level": "error"
+				}
+			},
+			"recommended": true,
+			"security": {
+				"noDangerouslySetInnerHtml": "error",
+				"noDangerouslySetInnerHtmlWithChildren": "error"
+			},
+			"style": {
+				"noNestedTernary": "error",
+				"noNonNullAssertion": "error",
+				"useConsistentArrayType": {
+					"level": "error",
+					"options": {
+						"syntax": "shorthand"
+					}
+				},
+				"useFilenamingConvention": {
+					"level": "error",
+					"options": {
+						"filenameCases": ["kebab-case"],
+						"requireAscii": true,
+						"strictCase": true
+					}
+				},
+				"useReactFunctionComponents": "error"
+			},
+			"suspicious": {
+				"noExplicitAny": "error"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.stories.ts", "**/*.stories.tsx", "src/test-utils/**"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"noLabelWithoutControl": "off",
+						"useKeyWithClickEvents": "off"
+					},
+					"correctness": {
+						"useUniqueElementIds": "off"
+					},
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		}
+	],
+	"vcs": {
+		"clientKind": "git",
+		"defaultBranch": "main",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}

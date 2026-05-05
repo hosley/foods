@@ -1,33 +1,33 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id": "https://example.com/recipe-summary.schema.json",
-	"title": "RecipeSummaryIndex",
-	"type": "array",
+	"$schema": "http://json-schema.org/draft-07/schema#",
 	"items": {
-		"type": "object",
 		"properties": {
-			"id": {
-				"type": "string",
-				"description": "Unique identifier, also the filename of the details JSON"
-			},
-			"title": { "type": "string" },
 			"cuisine": { "type": "string" },
-			"primaryProtein": {
-				"type": "string",
-				"description": "e.g., 'Chicken', 'Beef', 'Vegetarian'"
+			"id": {
+				"description": "Unique identifier, also the filename of the details JSON",
+				"type": "string"
 			},
-			"totalTimeMinutes": { "type": "integer" },
-			"searchableIngredients": {
-				"type": "array",
-				"items": { "type": "string" },
-				"description": "Normalized names only (e.g., 'garlic', 'chicken breast') for search"
+			"primaryProtein": {
+				"description": "e.g., 'Chicken', 'Beef', 'Vegetarian'",
+				"type": "string"
 			},
 			"searchableEquipment": {
-				"type": "array",
+				"description": "Normalized equipment names (e.g., 'blender', 'dutch oven')",
 				"items": { "type": "string" },
-				"description": "Normalized equipment names (e.g., 'blender', 'dutch oven')"
-			}
+				"type": "array"
+			},
+			"searchableIngredients": {
+				"description": "Normalized names only (e.g., 'garlic', 'chicken breast') for search",
+				"items": { "type": "string" },
+				"type": "array"
+			},
+			"title": { "type": "string" },
+			"totalTimeMinutes": { "type": "integer" }
 		},
-		"required": ["id", "title", "cuisine", "totalTimeMinutes"]
-	}
+		"required": ["id", "title", "cuisine", "totalTimeMinutes"],
+		"type": "object"
+	},
+	"title": "RecipeSummaryIndex",
+	"type": "array"
 }

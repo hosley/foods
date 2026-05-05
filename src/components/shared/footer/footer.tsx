@@ -1,7 +1,4 @@
-import {
-	getCommonContent,
-	getFooterContent,
-} from '../../../selectors/get-content/get-content';
+import { getCommonContent, getFooterContent } from '../../../selectors/get-content/get-content';
 
 export const Footer = () => {
 	const year = new Date().getFullYear();

@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -16,17 +16,17 @@ export function parseQuantity(input: string): number {
 	// Handle mixed numbers "1 1/2"
 	const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
 	if (mixedMatch) {
-		const whole = Number.parseInt(mixedMatch[1], 10);
-		const num = Number.parseInt(mixedMatch[2], 10);
-		const den = Number.parseInt(mixedMatch[3], 10);
+		const whole = Number.parseInt(String(mixedMatch[1]), 10);
+		const num = Number.parseInt(String(mixedMatch[2]), 10);
+		const den = Number.parseInt(String(mixedMatch[3]), 10);
 		return whole + num / den;
 	}
 
 	// Handle fractions "1/2"
 	const fractionMatch = trimmed.match(/^(\d+)\/(\d+)$/);
 	if (fractionMatch) {
-		const num = Number.parseInt(fractionMatch[1], 10);
-		const den = Number.parseInt(fractionMatch[2], 10);
+		const num = Number.parseInt(String(fractionMatch[1]), 10);
+		const den = Number.parseInt(String(fractionMatch[2]), 10);
 		return num / den;
 	}
 
@@ -43,6 +43,6 @@ export function toTitleCase(str: string): string {
 		.trim()
 		.toLowerCase()
 		.split(/\s+/)
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(" ");
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
 }

@@ -1,19 +1,19 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { AddRecipePage } from "./add-recipe-page";
+import type { Meta, StoryObj } from '@storybook/react';
+import { AddRecipePage } from './add-recipe-page';
 
 const meta: Meta<typeof AddRecipePage> = {
-	title: "Features/AddRecipePage",
 	component: AddRecipePage,
-	parameters: {
-		layout: "fullscreen",
-	},
 	decorators: [
-		(Story) => (
+		Story => (
 			<div className="p-8 bg-bg-base min-h-screen">
 				<Story />
 			</div>
 		),
 	],
+	parameters: {
+		layout: 'fullscreen',
+	},
+	title: 'Features/AddRecipePage',
 };
 
 export default meta;

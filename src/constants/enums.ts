@@ -1,17 +1,17 @@
 export const ThemeMode = {
-	Light: "light",
-	Dark: "dark",
-	Auto: "auto",
+	Auto: 'auto',
+	Dark: 'dark',
+	Light: 'light',
 } as const;
 
 export type ThemeMode = (typeof ThemeMode)[keyof typeof ThemeMode];
 
 export const MealType = {
-	Breakfast: "Breakfast",
-	Lunch: "Lunch",
-	Dinner: "Dinner",
-	Dessert: "Dessert",
-	Snack: "Snack",
+	Breakfast: 'Breakfast',
+	Dessert: 'Dessert',
+	Dinner: 'Dinner',
+	Lunch: 'Lunch',
+	Snack: 'Snack',
 } as const;
 
 export type MealType = (typeof MealType)[keyof typeof MealType];

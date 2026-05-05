@@ -1,33 +1,34 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { LandingPage } from "./landing-page";
+import type { Meta, StoryObj } from '@storybook/react';
 import {
+	createMemoryHistory,
 	createRootRoute,
 	createRoute,
 	createRouter,
 	RouterProvider,
-	createMemoryHistory,
-} from "@tanstack/react-router";
+} from '@tanstack/react-router';
+import { LandingPage } from './landing-page';
 
 const rootRoute = createRootRoute();
 const indexRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/",
 	component: LandingPage,
+	getParentRoute: () => rootRoute,
+	path: '/',
 });
 const routeTree = rootRoute.addChildren([indexRoute]);
-const history = createMemoryHistory({ initialEntries: ["/"] });
-const router = createRouter({ routeTree, history });
+const history = createMemoryHistory({ initialEntries: ['/'] });
+const router = createRouter({ history, routeTree });
 
 const meta: Meta<typeof LandingPage> = {
-	title: "Features/LandingPage",
 	component: LandingPage,
 	decorators: [
-			(Story) => (
-					<RouterProvider router={router as any}>
-							<Story />
-					</RouterProvider>
-			),
-	],};
+		Story => (
+			<RouterProvider router={router as any}>
+				<Story />
+			</RouterProvider>
+		),
+	],
+	title: 'Features/LandingPage',
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
