@@ -5,7 +5,10 @@ import viteReact from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import compression from 'vite-plugin-compression';
 
+const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1];
+
 export default defineConfig({
+	base: repositoryName ? `/${repositoryName}/` : '/',
 	build: {
 		rollupOptions: {
 			output: {
