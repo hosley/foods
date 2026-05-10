@@ -1,7 +1,8 @@
+import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import { devtools } from '@tanstack/devtools-vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
-import viteReact from '@vitejs/plugin-react-swc';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import compression from 'vite-plugin-compression';
 
@@ -30,7 +31,10 @@ export default defineConfig({
 				enabled: true,
 			},
 		}),
-		viteReact(),
+		react(),
+		babel({
+			presets: [reactCompilerPreset({ target: '19' })],
+		}),
 		compression({ algorithm: 'brotliCompress' }),
 	],
 });
