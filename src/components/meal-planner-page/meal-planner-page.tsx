@@ -7,6 +7,7 @@ import { getMealPlannerContent } from '../../selectors/get-content/get-content';
 import { getRecipeById } from '../../selectors/get-recipe-by-id/get-recipe-by-id';
 import { Button } from '../design-system/button/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/card/card';
+import { AddRecipeDialog } from './add-recipe-dialog/add-recipe-dialog';
 
 export const MealPlannerPage = () => {
 	const mealPlan = useAtomValue(mealPlanAtom);
@@ -94,6 +95,9 @@ export const MealPlannerPage = () => {
 									))
 								)}
 							</CardContent>
+							<div className="p-4 border-t border-line bg-surface/30 mt-auto">
+								<AddRecipeDialog date={dateStr} />
+							</div>
 						</Card>
 					);
 				})}

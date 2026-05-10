@@ -13,3 +13,7 @@ __unconfig*
 todos.json
 coverage
 issues/
+tsconfig.app.tsbuildinfo
+tsconfig.node.tsbuildinfo
+tsconfig.storybook.tsbuildinfo
+tsconfig.test.tsbuildinfo
