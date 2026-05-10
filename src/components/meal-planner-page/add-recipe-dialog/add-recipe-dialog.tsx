@@ -2,6 +2,7 @@ import { useSetAtom } from 'jotai';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { addRecipeToMealAtom } from '../../../atoms/meal-plan/meal-plan';
+import { DEFAULT_MEAL_SLOTS } from '../../../constants/meal-slots';
 import { getAllRecipes } from '../../../selectors/get-all-recipes/get-all-recipes';
 import { Button } from '../../design-system/button/button';
 import {
@@ -20,17 +21,20 @@ export interface AddRecipeDialogProps {
 
 export const AddRecipeDialog = ({ date }: AddRecipeDialogProps) => {
 	const [open, setOpen] = useState(false);
+	const [selectedSlot, setSelectedSlot] = useState(DEFAULT_MEAL_SLOTS[2]); // Default to Dinner
 	const addRecipeToMeal = useSetAtom(addRecipeToMealAtom);
 	const allRecipes = getAllRecipes();
 
 	const handleSelect = (recipeId: string) => {
-		addRecipeToMeal({
-			date,
-			mealName: 'Dinner', // Default for Issue 005
-			recipeId,
-			time: '18:00', // Default for Issue 005
-		});
-		setOpen(false);
+		if (selectedSlot) {
+			addRecipeToMeal({
+				date,
+				mealName: selectedSlot.name,
+				recipeId,
+				time: selectedSlot.defaultTime,
+			});
+			setOpen(false);
+		}
 	};
 
 	return (
@@ -42,6 +46,19 @@ export const AddRecipeDialog = ({ date }: AddRecipeDialogProps) => {
 			<DialogContent className="p-0 sm:max-w-md">
 				<DialogHeader className="p-4 border-b border-line">
 					<DialogTitle>Select Recipe</DialogTitle>
+					<div className="flex gap-2 mt-4">
+						{DEFAULT_MEAL_SLOTS.map(slot => (
+							<Button
+								className="flex-1 text-[10px] h-7 uppercase tracking-tighter font-black"
+								key={slot.name}
+								onClick={() => setSelectedSlot(slot)}
+								size="sm"
+								variant={selectedSlot?.name === slot.name ? 'default' : 'outline'}
+							>
+								{slot.name}
+							</Button>
+						))}
+					</div>
 				</DialogHeader>
 				<Command>
 					<CommandInput placeholder="Search recipes..." />

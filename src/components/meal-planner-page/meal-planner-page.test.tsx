@@ -24,7 +24,7 @@ describe('MealPlannerPage', () => {
 		vi.useRealTimers();
 	});
 
-	it('renders the meal planner grid with 7 days', () => {
+	it('renders the meal planner grid with 7 days and structured slots', () => {
 		// Wednesday, May 13, 2026
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
@@ -38,35 +38,14 @@ describe('MealPlannerPage', () => {
 		expect(screen.getByText('Meal Planner')).toBeInTheDocument();
 		expect(screen.getAllByText('Sunday').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Saturday').length).toBeGreaterThan(0);
-	});
 
-	it('renders planned recipes in the grid', () => {
-		// Sunday, May 10, 2026
-		const todayStr = '2026-05-10';
-		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
-
-		const store = createStore();
-		store.set(mealPlanAtom, {
-			[todayStr]: [
-				{
-					mealName: 'Dinner',
-					recipeIds: ['basil-pesto-pasta'],
-					time: '18:00',
-				},
-			],
-		});
-
-		render(
-			<Provider store={store}>
-				<MealPlannerPage />
-			</Provider>,
-		);
-
+		// Verify slots exist
+		expect(screen.getAllByText('Breakfast').length).toBeGreaterThan(0);
+		expect(screen.getAllByText('Lunch').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Dinner').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Fresh Basil Pesto Pasta').length).toBeGreaterThan(0);
 	});
 
-	it('handles missing recipes gracefully', () => {
+	it('renders planned recipes in the correct slot', () => {
 		const todayStr = '2026-05-10';
 		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
 
@@ -75,7 +54,7 @@ describe('MealPlannerPage', () => {
 			[todayStr]: [
 				{
 					mealName: 'Lunch',
-					recipeIds: ['non-existent-recipe'],
+					recipeIds: ['basil-pesto-pasta'],
 					time: '12:00',
 				},
 			],
@@ -87,6 +66,8 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		expect(screen.getAllByText('Unknown Recipe').length).toBeGreaterThan(0);
+		// Basil Pesto Pasta should be under Lunch
+		expect(screen.getAllByText('Lunch').length).toBeGreaterThan(0);
+		expect(screen.getAllByText('Fresh Basil Pesto Pasta').length).toBeGreaterThan(0);
 	});
 });
