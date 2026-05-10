@@ -113,7 +113,7 @@
 - **Unit/Integration Framework:** Use Vitest (`describe`, `it`, `expect`, `vi`). Do not use Jest.
 - **Strict Production Boundary:** Absolutely never write test-specific or Storybook-specific logic inside production code (e.g., no conditional rendering based on `process.env.NODE_ENV === 'test'`). Production code must remain entirely agnostic of the environments testing or documenting it.
 - **E2E Automation:** Use **Playwright** exclusively for end-to-end testing and browser automation.
-- **Coverage Goal:** Write comprehensive tests to shoot for **100% test coverage**.
+- **Coverage Goal:** Write comprehensive tests to shoot for **90% test coverage** for the most critical items, but shoot for higher on files when possible, especially if easy. We should only skip writing a test for something if it would be truly impossible or a waste of time to write the test for it.
 - **Performance/Mocking Rules:** Avoid heavy module mocking (`vi.mock()`) to prevent Vitest cache invalidation and performance bottlenecks.
     - Test pure functions directly without mocks.
     - Use Mock Service Worker (MSW) to mock the network layer instead of mocking the HTTP client.
