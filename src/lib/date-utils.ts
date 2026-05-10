@@ -1,8 +1,19 @@
 /**
- * Gets the ISO date string (YYYY-MM-DD) for a given Date object.
+ * Gets the ISO date string (YYYY-MM-DD) for a given Date object in local time.
  */
 export const toISODateString = (date: Date): string => {
-	return date.toISOString().split('T')[0] as string;
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+};
+
+/**
+ * Parses an ISO date string (YYYY-MM-DD) into a local Date object.
+ */
+export const parseISODate = (dateStr: string): Date => {
+	const [year, month, day] = dateStr.split('-').map(Number);
+	return new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
 };
 
 /**
@@ -11,9 +22,8 @@ export const toISODateString = (date: Date): string => {
  */
 export const getWeekDates = (referenceDate: Date): Date[] => {
 	const day = referenceDate.getDay(); // Sunday is 0
-	const diff = referenceDate.getDate() - day;
 	const sunday = new Date(referenceDate);
-	sunday.setDate(diff);
+	sunday.setDate(referenceDate.getDate() - day);
 	sunday.setHours(0, 0, 0, 0);
 
 	return Array.from({ length: 7 }, (_, i) => {
@@ -21,4 +31,13 @@ export const getWeekDates = (referenceDate: Date): Date[] => {
 		d.setDate(sunday.getDate() + i);
 		return d;
 	});
+};
+
+/**
+ * Adds a specific number of days to a Date object, returning a new Date.
+ */
+export const addDays = (date: Date, days: number): Date => {
+	const result = new Date(date);
+	result.setDate(result.getDate() + days);
+	return result;
 };

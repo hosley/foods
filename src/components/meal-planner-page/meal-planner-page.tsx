@@ -1,19 +1,59 @@
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
-import { getWeekDates, toISODateString } from '../../lib/date-utils';
+import { addDays, getWeekDates, parseISODate, toISODateString } from '../../lib/date-utils';
 import { getMealPlannerContent } from '../../selectors/get-content/get-content';
 import { getRecipeById } from '../../selectors/get-recipe-by-id/get-recipe-by-id';
+import { Button } from '../design-system/button/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/card/card';
 
 export const MealPlannerPage = () => {
 	const mealPlan = useAtomValue(mealPlanAtom);
 	const content = getMealPlannerContent();
-	const weekDates = getWeekDates(new Date());
+	const navigate = useNavigate({ from: '/meal-planner' });
+	const { date: searchDate } = useSearch({ from: '/meal-planner' });
+
+	// Use local-safe parsing and formatting
+	const referenceDate = searchDate ? parseISODate(searchDate) : new Date();
+	const weekDates = getWeekDates(referenceDate);
+	const currentSunday = weekDates[0] as Date;
+
+	const currentRealWeekStart = getWeekDates(new Date())[0];
+	const maxWeekStart = addDays(currentRealWeekStart as Date, 7);
+
+	const isNextDisabled = currentSunday >= maxWeekStart;
+
+	const targetPrevWeekStart = addDays(currentSunday, -7);
+	const hasDataInPrevWeek = Object.keys(mealPlan).some(dateStr => {
+		const date = parseISODate(dateStr);
+		const targetEnd = addDays(targetPrevWeekStart, 6);
+		return date >= targetPrevWeekStart && date <= targetEnd && mealPlan[dateStr] && mealPlan[dateStr]?.length > 0;
+	});
+
+	const isPrevDisabled = currentSunday <= (currentRealWeekStart as Date) && !hasDataInPrevWeek;
+
+	const handleNavigate = (days: number) => {
+		const targetSunday = addDays(currentSunday, days);
+		navigate({
+			search: { date: toISODateString(targetSunday) },
+		});
+	};
 
 	return (
 		<div className="space-y-8 rise-in">
-			<header className="space-y-2">
+			<header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<h1 className="text-3xl md:text-4xl font-bold font-heading text-sea-ink">{content.title}</h1>
+				<div className="flex items-center gap-2">
+					<Button disabled={isPrevDisabled} onClick={() => handleNavigate(-7)} variant="outline">
+						<ChevronLeft className="h-4 w-4 mr-2" />
+						Previous Week
+					</Button>
+					<Button disabled={isNextDisabled} onClick={() => handleNavigate(7)} variant="outline">
+						Next Week
+						<ChevronRight className="h-4 w-4 ml-2" />
+					</Button>
+				</div>
 			</header>
 
 			<div className="grid grid-cols-1 md:grid-cols-7 gap-4">

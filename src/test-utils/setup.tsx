@@ -127,6 +127,8 @@ vi.mock('lucide-react', () => {
 		Check: MockIcon,
 		ChefHat: MockIcon,
 		ChevronDown: MockIcon,
+		ChevronLeft: MockIcon,
+		ChevronRight: MockIcon,
 		Clock: MockIcon,
 		Copy: MockIcon,
 		Plus: MockIcon,
