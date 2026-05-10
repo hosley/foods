@@ -10,6 +10,8 @@ export const getRecipePageContent = () => getContent().recipePage;
 
 export const getAddRecipeContent = () => getContent().addRecipe;
 
+export const getMealPlannerContent = () => getContent().mealPlannerPage;
+
 export const getCommonContent = () => getContent().common;
 
 export const getNavContent = () => getCommonContent().nav;

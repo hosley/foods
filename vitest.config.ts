@@ -34,7 +34,7 @@ export default defineConfig({
 		environment: 'happy-dom',
 		globals: false,
 		include: ['src/**/*.test.{ts,tsx}'],
-		isolate: false,
+		isolate: true,
 		maxWorkers: 1,
 		pool: 'threads',
 		setupFiles: ['./src/test-utils/setup.tsx'],

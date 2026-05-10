@@ -30,6 +30,9 @@ export const Header = () => {
 					<Link activeProps={{ className: 'nav-link is-active' }} className="nav-link" to="/">
 						{nav.home}
 					</Link>
+					<Link activeProps={{ className: 'nav-link is-active' }} className="nav-link" to="/meal-planner">
+						{nav.mealPlanner}
+					</Link>
 					<Link activeProps={{ className: 'nav-link is-active' }} className="nav-link" to="/shopping-list">
 						{nav.shoppingList}
 					</Link>

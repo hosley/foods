@@ -1,34 +1,33 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { Provider, atom } from 'jotai';
-import { describe, expect, it, vi } from 'vitest';
-import type { Recipe } from '../../recipes/schema';
-import { RecipePage } from './recipe-page';
+import { vi } from 'vitest';
 
-// Mock the storage module using aliased path to ensure it's picked up by the atoms
+// Mock storage via aliased path FIRST
 vi.mock('#/lib/meal-plan-storage', () => ({
 	getMealPlan: vi.fn().mockResolvedValue({}),
 	purgeStaleData: vi.fn().mockResolvedValue(undefined),
 	saveRecipesForDate: vi.fn().mockResolvedValue(undefined),
 }));
 
+import { fireEvent, render, screen } from '@testing-library/react';
+import { atom, Provider } from 'jotai';
+import { describe, expect, it } from 'vitest';
+import type { Recipe } from '../../recipes/schema';
+import { RecipePage } from './recipe-page';
+
 // Mock the atoms to prevent storage access and simplify state testing
-vi.mock('../../atoms/meal-plan/meal-plan', async (importOriginal) => {
+vi.mock('../../atoms/meal-plan/meal-plan', async importOriginal => {
 	const actual = await importOriginal<any>();
 	const mockMealPlanAtom = atom<any>({});
-	const mockAddRecipeToMealAtom = atom(
-		null,
-		(get, set, { date, recipeId, mealName, time }: any) => {
-			const current = get(mockMealPlanAtom);
-			set(mockMealPlanAtom, {
-				...current,
-				[date]: [{ mealName, recipeIds: [recipeId], time }],
-			});
-		}
-	);
+	const mockAddRecipeToMealAtom = atom(null, (get, set, { date, recipeId, mealName, time }: any) => {
+		const current = get(mockMealPlanAtom);
+		set(mockMealPlanAtom, {
+			...current,
+			[date]: [{ mealName, recipeIds: [recipeId], time }],
+		});
+	});
 	return {
 		...actual,
-		mealPlanAtom: mockMealPlanAtom,
 		addRecipeToMealAtom: mockAddRecipeToMealAtom,
+		mealPlanAtom: mockMealPlanAtom,
 	};
 });
 

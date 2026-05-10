@@ -2,6 +2,14 @@
  * @vitest-environment happy-dom
  */
 
+import { vi } from 'vitest';
+
+// Mock storage via aliased path FIRST
+vi.mock('#/lib/meal-plan-storage', () => ({
+	getMealPlan: vi.fn().mockResolvedValue({}),
+	purgeStaleData: vi.fn().mockResolvedValue(undefined),
+}));
+
 import {
 	createMemoryHistory,
 	createRootRoute,
@@ -10,15 +18,9 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getCommonContent } from '../../../selectors/get-content/get-content';
 import { DefaultLayout } from './default-layout';
-
-// Mock storage via aliased path
-vi.mock('#/lib/meal-plan-storage', () => ({
-	getMealPlan: vi.fn().mockResolvedValue({}),
-	purgeStaleData: vi.fn().mockResolvedValue(undefined),
-}));
 
 describe('DefaultLayout', () => {
 	it('renders the layout with header and footer', async () => {

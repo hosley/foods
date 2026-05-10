@@ -136,5 +136,9 @@ vi.mock('lucide-react', () => {
 	};
 });
 
-// Mock idb-keyval globally to prevent ReferenceErrors
-vi.mock('idb-keyval');
+// Proper mock for idb-keyval to prevent ReferenceErrors
+vi.mock('idb-keyval', () => ({
+	get: vi.fn(),
+	set: vi.fn(),
+	update: vi.fn(),
+}));

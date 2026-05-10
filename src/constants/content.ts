@@ -54,6 +54,7 @@ export const AppContent = {
 		},
 		nav: {
 			home: 'Home',
+			mealPlanner: 'Meal Planner',
 			shoppingList: 'Shopping List',
 		},
 	},
@@ -63,6 +64,18 @@ export const AppContent = {
 			'Curated dishes designed for maximum flavor and perfect execution, focusing on quality ingredients and reliable techniques.',
 		prepSuffix: 'm prep',
 		title: 'Discover Exceptional Recipes',
+	},
+	mealPlannerPage: {
+		days: {
+			0: 'Sunday',
+			1: 'Monday',
+			2: 'Tuesday',
+			3: 'Wednesday',
+			4: 'Thursday',
+			5: 'Friday',
+			6: 'Saturday',
+		},
+		title: 'Meal Planner',
 	},
 	recipePage: {
 		saveButton: {

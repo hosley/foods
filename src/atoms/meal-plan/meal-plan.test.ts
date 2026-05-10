@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as storage from '#/lib/meal-plan-storage';
 import { addRecipeToMealAtom, loadMealPlanAtom, mealPlanAtom } from './meal-plan';
 
-// We mock the entire storage module using the aliased path
 vi.mock('#/lib/meal-plan-storage', () => ({
 	getMealPlan: vi.fn(),
 	purgeStaleData: vi.fn(),
