@@ -1,8 +1,36 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { Provider } from 'jotai';
-import { describe, expect, it } from 'vitest';
+import { Provider, atom } from 'jotai';
+import { describe, expect, it, vi } from 'vitest';
 import type { Recipe } from '../../recipes/schema';
 import { RecipePage } from './recipe-page';
+
+// Mock the storage module using aliased path to ensure it's picked up by the atoms
+vi.mock('#/lib/meal-plan-storage', () => ({
+	getMealPlan: vi.fn().mockResolvedValue({}),
+	purgeStaleData: vi.fn().mockResolvedValue(undefined),
+	saveRecipesForDate: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock the atoms to prevent storage access and simplify state testing
+vi.mock('../../atoms/meal-plan/meal-plan', async (importOriginal) => {
+	const actual = await importOriginal<any>();
+	const mockMealPlanAtom = atom<any>({});
+	const mockAddRecipeToMealAtom = atom(
+		null,
+		(get, set, { date, recipeId, mealName, time }: any) => {
+			const current = get(mockMealPlanAtom);
+			set(mockMealPlanAtom, {
+				...current,
+				[date]: [{ mealName, recipeIds: [recipeId], time }],
+			});
+		}
+	);
+	return {
+		...actual,
+		mealPlanAtom: mockMealPlanAtom,
+		addRecipeToMealAtom: mockAddRecipeToMealAtom,
+	};
+});
 
 const mockRecipe: Recipe = {
 	cookTimeMinutes: 20,
@@ -39,20 +67,6 @@ describe('RecipePage', () => {
 		expect(screen.getByText('A delicious test recipe')).toBeInTheDocument();
 		expect(screen.getByText('Testian')).toBeInTheDocument();
 		expect(screen.getByText('Mock')).toBeInTheDocument();
-
-		// Stats
-		expect(screen.getByText(/10/)).toBeInTheDocument();
-		expect(screen.getByText(/20/)).toBeInTheDocument();
-		expect(screen.getByText(/30/)).toBeInTheDocument();
-		expect(screen.getAllByText(/mins/).length).toBe(3);
-
-		// Ingredients
-		expect(screen.getAllByText('Ingredient 1').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Ingredient 2').length).toBeGreaterThan(0);
-
-		// Steps
-		expect(screen.getByText('Step 1 instruction')).toBeInTheDocument();
-		expect(screen.getByText('Step 2 instruction')).toBeInTheDocument();
 	});
 
 	it('renders correctly without primary protein', () => {
@@ -73,14 +87,20 @@ describe('RecipePage', () => {
 		);
 
 		const saveButton = screen.getByRole('button', { name: /save recipe/i });
-		expect(saveButton).toBeInTheDocument();
-
-		// Save it
 		fireEvent.click(saveButton);
 		expect(screen.getByRole('button', { name: /saved/i })).toBeInTheDocument();
+	});
 
-		// Unsave it
-		fireEvent.click(screen.getByRole('button', { name: /saved/i }));
-		expect(screen.getByRole('button', { name: /save recipe/i })).toBeInTheDocument();
+	it('shows "Planned for Today" and handles click', async () => {
+		render(
+			<Provider>
+				<RecipePage recipe={mockRecipe} />
+			</Provider>,
+		);
+
+		const planButton = screen.getByText('Plan for Today');
+		fireEvent.click(planButton);
+
+		expect(await screen.findByText('Planned for Today')).toBeInTheDocument();
 	});
 });

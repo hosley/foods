@@ -1,6 +1,8 @@
-import { useAtom, useAtomValue } from 'jotai';
-import { Bookmark, BookmarkCheck, ChefHat, Clock } from 'lucide-react';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { Bookmark, BookmarkCheck, Calendar, ChefHat, Clock } from 'lucide-react';
+import { addRecipeToMealAtom, mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
 import { savedRecipesAtom, toggleSavedRecipeAtom } from '../../atoms/saved-recipes/saved-recipes';
+import type { MealEntry } from '../../lib/meal-plan-storage';
 import { toTitleCase } from '../../lib/utils';
 import type { Recipe } from '../../recipes/schema';
 import { getRecipePageContent } from '../../selectors/get-content/get-content';
@@ -13,9 +15,14 @@ export interface RecipePageProps {
 export const RecipePage = ({ recipe }: RecipePageProps) => {
 	const [_savedRecipes, toggleSaved] = useAtom(toggleSavedRecipeAtom);
 	const savedRecipeIds = useAtomValue(savedRecipesAtom);
+	const addRecipeToMeal = useSetAtom(addRecipeToMealAtom);
+	const mealPlan = useAtomValue(mealPlanAtom);
 	const content = getRecipePageContent();
 
 	const isSaved = savedRecipeIds.includes(recipe.id);
+
+	const today = new Date().toISOString().split('T')[0] as string;
+	const isPlannedForToday = mealPlan[today]?.some((m: MealEntry) => m.recipeIds.includes(recipe.id));
 
 	return (
 		<article className="max-w-4xl mx-auto rise-in space-y-12">
@@ -33,15 +40,33 @@ export const RecipePage = ({ recipe }: RecipePageProps) => {
 						<h1 className="text-4xl md:text-5xl font-bold font-heading text-sea-ink">{recipe.title}</h1>
 						<p className="text-lg text-sea-ink-soft">{recipe.description}</p>
 					</div>
-					<Button
-						className="w-full md:w-auto font-bold shrink-0"
-						onClick={() => toggleSaved(recipe.id)}
-						size="lg"
-						variant={isSaved ? 'secondary' : 'default'}
-					>
-						{isSaved ? <BookmarkCheck className="mr-2 h-5 w-5" /> : <Bookmark className="mr-2 h-5 w-5" />}
-						{isSaved ? content.saveButton.saved : content.saveButton.default}
-					</Button>
+					<div className="flex flex-col md:flex-row gap-3 shrink-0">
+						<Button
+							className="font-bold"
+							onClick={() => toggleSaved(recipe.id)}
+							size="lg"
+							variant={isSaved ? 'secondary' : 'default'}
+						>
+							{isSaved ? <BookmarkCheck className="mr-2 h-5 w-5" /> : <Bookmark className="mr-2 h-5 w-5" />}
+							{isSaved ? content.saveButton.saved : content.saveButton.default}
+						</Button>
+						<Button
+							className="font-bold"
+							onClick={() =>
+								addRecipeToMeal({
+									date: today,
+									mealName: 'Dinner',
+									recipeId: recipe.id,
+									time: '18:00',
+								})
+							}
+							size="lg"
+							variant={isPlannedForToday ? 'secondary' : 'outline'}
+						>
+							<Calendar className="mr-2 h-5 w-5" />
+							{isPlannedForToday ? 'Planned for Today' : 'Plan for Today'}
+						</Button>
+					</div>
 				</div>
 
 				<div className="island-shell rounded-2xl p-6 flex wrap gap-8 justify-around text-center">

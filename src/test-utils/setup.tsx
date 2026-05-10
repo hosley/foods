@@ -10,9 +10,6 @@ afterEach(() => {
 });
 
 // Surgical Mocks for Local UI Primitives
-// Instead of mocking 3rd party libraries, we mock our own UI components
-// at the border. This prunes the module graph and prevents OOM.
-
 export const TriggerMock = ({ children, render }: any) => {
 	if (render) {
 		return React.cloneElement(render, {}, children);
@@ -126,6 +123,7 @@ vi.mock('lucide-react', () => {
 	return {
 		Bookmark: MockIcon,
 		BookmarkCheck: MockIcon,
+		Calendar: MockIcon,
 		Check: MockIcon,
 		ChefHat: MockIcon,
 		ChevronDown: MockIcon,
@@ -137,3 +135,6 @@ vi.mock('lucide-react', () => {
 		Trash2: MockIcon,
 	};
 });
+
+// Mock idb-keyval globally to prevent ReferenceErrors
+vi.mock('idb-keyval');
