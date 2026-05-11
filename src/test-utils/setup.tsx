@@ -131,6 +131,7 @@ vi.mock('lucide-react', () => {
 		ChevronRight: MockIcon,
 		Clock: MockIcon,
 		Copy: MockIcon,
+		Pencil: MockIcon,
 		Plus: MockIcon,
 		Search: MockIcon,
 		Settings: MockIcon,

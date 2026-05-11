@@ -10,6 +10,7 @@ import { getRecipeById } from '../../selectors/get-recipe-by-id/get-recipe-by-id
 import { Button } from '../design-system/button/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/card/card';
 import { AddRecipeDialog } from './add-recipe-dialog/add-recipe-dialog';
+import { EditMealDialog } from './edit-meal-dialog/edit-meal-dialog';
 
 export const MealPlannerPage = () => {
 	const mealPlan = useAtomValue(mealPlanAtom);
@@ -75,38 +76,52 @@ export const MealPlannerPage = () => {
 								</p>
 							</CardHeader>
 							<CardContent className="p-4 flex-1 space-y-6">
-								{DEFAULT_MEAL_SLOTS.map(slot => {
-									const meal = dayMeals.find(m => m.mealName === slot.name);
+								{/* Render all meals for the day */}
+								{dayMeals.map(meal => (
+									<div className="space-y-2" key={meal.mealName}>
+										<div className="flex items-center justify-between group">
+											<div className="flex items-center gap-2">
+												<h3 className="text-[10px] font-black text-sea-ink uppercase tracking-widest">
+													{meal.mealName}
+												</h3>
+												<div className="opacity-0 group-hover:opacity-100 transition-opacity">
+													<EditMealDialog date={dateStr} mealName={meal.mealName} time={meal.time} />
+												</div>
+											</div>
+											<span className="text-[10px] text-sea-ink-soft font-mono bg-sea-ink/5 px-1 rounded">
+												{meal.time}
+											</span>
+										</div>
+										<ul className="space-y-1">
+											{meal.recipeIds.map(id => {
+												const recipe = getRecipeById(id);
+												return (
+													<li
+														className="text-xs text-sea-ink bg-white border border-line rounded px-2 py-1.5 shadow-xs"
+														key={id}
+													>
+														{recipe?.title ?? 'Unknown Recipe'}
+													</li>
+												);
+											})}
+										</ul>
+									</div>
+								))}
+
+								{/* Show empty indicators for default slots if missing */}
+								{DEFAULT_MEAL_SLOTS.filter(slot => !dayMeals.some(m => m.mealName === slot.name)).map(slot => {
 									const mealName = slot.name as keyof typeof settings.defaultTimes;
 									const displayTime = settings.defaultTimes[mealName] || slot.defaultTime;
 
 									return (
-										<div className="space-y-2" key={slot.name}>
+										<div className="space-y-2 opacity-40" key={slot.name}>
 											<div className="flex items-center justify-between">
 												<h3 className="text-[10px] font-black text-sea-ink-soft uppercase tracking-widest">
 													{slot.name}
 												</h3>
-												<span className="text-[10px] text-sea-ink-soft font-mono bg-sea-ink/5 px-1 rounded">
-													{displayTime}
-												</span>
+												<span className="text-[10px] text-sea-ink-soft font-mono px-1">{displayTime}</span>
 											</div>
-											<ul className="space-y-1 min-h-[2rem]">
-												{meal && meal.recipeIds.length > 0 ? (
-													meal.recipeIds.map(id => {
-														const recipe = getRecipeById(id);
-														return (
-															<li
-																className="text-xs text-sea-ink bg-white border border-line rounded px-2 py-1.5 shadow-xs"
-																key={id}
-															>
-																{recipe?.title ?? 'Unknown Recipe'}
-															</li>
-														);
-													})
-												) : (
-													<li className="text-[10px] text-sea-ink-soft/40 italic py-1">No recipes</li>
-												)}
-											</ul>
+											<div className="text-[10px] italic py-1 pl-1">No recipes</div>
 										</div>
 									);
 								})}

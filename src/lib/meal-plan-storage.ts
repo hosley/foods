@@ -59,6 +59,35 @@ export const saveRecipesForDate = async (
 };
 
 /**
+ * Saves all meals for a given date, replacing any existing data for that date.
+ */
+export const saveDayMeals = async (date: string, meals: MealEntry[]): Promise<void> => {
+	await update<WeeklyMealPlan>(MEAL_PLAN_KEY, val => {
+		const current = val ?? {};
+		return {
+			...current,
+			[date]: meals,
+		};
+	});
+};
+
+/**
+ * Removes a specific meal entry from a date.
+ */
+export const removeMealFromDate = async (date: string, mealName: string): Promise<void> => {
+	await update<WeeklyMealPlan>(MEAL_PLAN_KEY, val => {
+		const current = val ?? {};
+		const dayMeals = current[date] ?? [];
+		const updated = dayMeals.filter(m => m.mealName !== mealName);
+
+		return {
+			...current,
+			[date]: updated,
+		};
+	});
+};
+
+/**
  * Identifies and deletes meal plan entries that are stale based on the Wednesday rule.
  * Data for a week (Sun-Sat) is cleared on the Wednesday following that Saturday.
  */

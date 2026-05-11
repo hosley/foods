@@ -70,7 +70,33 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		expect(screen.getAllByText('Fresh Basil Pesto Pasta').length).toBeGreaterThan(0);
+		expect(screen.getAllByText(/Fresh Basil Pesto Pasta/i).length).toBeGreaterThan(0);
+	});
+
+	it('renders custom meal entries with their specific times', () => {
+		const todayStr = '2026-05-10';
+		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
+
+		const store = createStore();
+		store.set(mealPlanAtom, {
+			[todayStr]: [
+				{
+					mealName: 'Midnight Snack',
+					recipeIds: ['cast-iron-chicken'],
+					time: '23:30',
+				},
+			],
+		});
+
+		render(
+			<Provider store={store}>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		expect(screen.getByText('Midnight Snack')).toBeInTheDocument();
+		expect(screen.getByText('23:30')).toBeInTheDocument();
+		expect(screen.getAllByText(/Sear-Roasted Chicken Thighs/i).length).toBeGreaterThan(0);
 	});
 
 	it('navigates between weeks', () => {
@@ -89,6 +115,40 @@ describe('MealPlannerPage', () => {
 		expect(mockNavigate).toHaveBeenCalledWith({
 			search: { date: '2026-05-17' },
 		});
+	});
+
+	it('disables "Previous Week" on current week without data', () => {
+		const today = new Date('2026-05-13T12:00:00Z');
+		vi.setSystemTime(today);
+
+		render(
+			<Provider>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const prevButton = screen.getByText('Previous Week');
+		expect(prevButton).toBeDisabled();
+	});
+
+	it('enables "Previous Week" on current week WITH data in previous week', () => {
+		const today = new Date('2026-05-13T12:00:00Z');
+		vi.setSystemTime(today);
+
+		const store = createStore();
+		// Previous week (May 3-9)
+		store.set(mealPlanAtom, {
+			'2026-05-05': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }],
+		});
+
+		render(
+			<Provider store={store}>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const prevButton = screen.getByText('Previous Week');
+		expect(prevButton).not.toBeDisabled();
 	});
 
 	it('respects user defined default times', () => {

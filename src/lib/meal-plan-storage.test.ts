@@ -1,6 +1,6 @@
 import * as idb from 'idb-keyval';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMealPlan, purgeStaleData, saveRecipesForDate } from './meal-plan-storage';
+import { getMealPlan, purgeStaleData, removeMealFromDate, saveDayMeals, saveRecipesForDate } from './meal-plan-storage';
 
 vi.mock('idb-keyval', () => ({
 	get: vi.fn(),
@@ -74,6 +74,53 @@ describe('meal-plan-storage', () => {
 			recipeIds: ['1'],
 			time: '18:00',
 		});
+	});
+
+	it('should save all meals for a day', async () => {
+		let storedValue: any = {};
+		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+			storedValue = updater(storedValue);
+		});
+
+		const meals = [{ mealName: 'Breakfast', recipeIds: ['1'], time: '08:00' }];
+		await saveDayMeals('2026-05-10', meals);
+		expect(storedValue).toEqual({ '2026-05-10': meals });
+	});
+
+	it('should handle null value in update for saveDayMeals', async () => {
+		let storedValue: any = null;
+		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+			storedValue = updater(storedValue);
+		});
+
+		await saveDayMeals('2026-05-10', []);
+		expect(storedValue).toEqual({ '2026-05-10': [] });
+	});
+
+	it('should remove a meal from a date', async () => {
+		let storedValue: any = {
+			'2026-05-10': [
+				{ mealName: 'Lunch', recipeIds: ['1'], time: '12:00' },
+				{ mealName: 'Dinner', recipeIds: ['2'], time: '18:00' },
+			],
+		};
+		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+			storedValue = updater(storedValue);
+		});
+
+		await removeMealFromDate('2026-05-10', 'Lunch');
+		expect(storedValue['2026-05-10']).toHaveLength(1);
+		expect(storedValue['2026-05-10'][0].mealName).toBe('Dinner');
+	});
+
+	it('should handle null value in update for removeMealFromDate', async () => {
+		let storedValue: any = null;
+		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+			storedValue = updater(storedValue);
+		});
+
+		await removeMealFromDate('2026-05-10', 'Lunch');
+		expect(storedValue).toEqual({ '2026-05-10': [] });
 	});
 
 	it('should purge stale data based on the Wednesday rule (Scenario: Today is Wednesday)', async () => {
