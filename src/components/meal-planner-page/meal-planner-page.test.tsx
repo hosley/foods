@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createStore, Provider } from 'jotai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mealPlanAtom, undoSnapshotAtom } from '../../atoms/meal-plan/meal-plan';
+import * as ics from '../../lib/ics';
 import { encodeMealPlan } from '../../lib/sharing';
 import { MealPlannerPage } from './meal-planner-page';
 
@@ -24,12 +25,21 @@ vi.mock('idb-keyval', () => ({
 	update: vi.fn(),
 }));
 
+// Mock ICS utility
+vi.mock('../../lib/ics', async importOriginal => {
+	const actual = await importOriginal<any>();
+	return {
+		...actual,
+		downloadICS: vi.fn(),
+	};
+});
+
 describe('MealPlannerPage', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockSearch = {};
 
-		// Stub location for sharing tests
+		// Stub location for sharing/export tests
 		vi.stubGlobal('location', {
 			origin: 'http://localhost:3000',
 			pathname: '/meal-planner',
@@ -122,6 +132,48 @@ describe('MealPlannerPage', () => {
 		expect(screen.queryByText(/Undo/i)).not.toBeInTheDocument();
 	});
 
+	it('exports the weekly calendar to ICS', async () => {
+		const store = createStore();
+		const todayStr = toISODateString(new Date());
+		store.set(mealPlanAtom, {
+			[todayStr]: [
+				{
+					mealName: 'Dinner',
+					recipeIds: ['basil-pesto-pasta'],
+					time: '18:00',
+				},
+			],
+		});
+
+		render(
+			<Provider store={store}>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const exportButton = screen.getByText('Export Calendar');
+		fireEvent.click(exportButton);
+
+		expect(ics.downloadICS).toHaveBeenCalled();
+		const call = vi.mocked(ics.downloadICS).mock.calls[0];
+		expect(call?.[0]).toMatch(/meal-plan-.*\.ics/);
+		expect(call?.[1]).toContain('SUMMARY:Dinner: Fresh Basil Pesto Pasta');
+	});
+
+	it('shows an alert if no recipes are planned during export', () => {
+		vi.stubGlobal('alert', vi.fn());
+		render(
+			<Provider>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const exportButton = screen.getByText('Export Calendar');
+		fireEvent.click(exportButton);
+
+		expect(window.alert).toHaveBeenCalledWith('No recipes planned for this week to export.');
+	});
+
 	it('clears the share parameter when onClearShare is called', async () => {
 		const mockPlan = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }] };
 		const shareCode = encodeMealPlan(mockPlan);
@@ -148,3 +200,11 @@ describe('MealPlannerPage', () => {
 		expect(result).toEqual({ date: '2026-05-10' });
 	});
 });
+
+// Helper for tests
+function toISODateString(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+}

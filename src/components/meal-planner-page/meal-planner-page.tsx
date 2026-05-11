@@ -1,11 +1,12 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { ChevronLeft, ChevronRight, Share2, Undo2 } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Share2, Undo2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { clearUndoSnapshotAtom, mealPlanAtom, undoImportAtom, undoSnapshotAtom } from '../../atoms/meal-plan/meal-plan';
 import { userSettingsAtom } from '../../atoms/user-settings/user-settings';
 import { DEFAULT_MEAL_SLOTS } from '../../constants/meal-slots';
 import { addDays, getWeekDates, parseISODate, toISODateString } from '../../lib/date-utils';
+import { downloadICS, generateICS } from '../../lib/ics';
 import type { WeeklyMealPlan } from '../../lib/meal-plan-storage';
 import { generateShareUrl } from '../../lib/sharing';
 import { getMealPlannerContent } from '../../selectors/get-content/get-content';
@@ -96,6 +97,7 @@ export const MealPlannerPage = () => {
 	};
 
 	const handleShare = async () => {
+		// Extract only data for the current week to share
 		const weekData = weekDates.reduce((acc, date) => {
 			const ds = toISODateString(date);
 			if (mealPlan[ds]) {
@@ -113,6 +115,45 @@ export const MealPlannerPage = () => {
 		} catch (err) {
 			console.error('Failed to copy share URL:', err);
 		}
+	};
+
+	const handleExportICS = () => {
+		const events = weekDates.flatMap(date => {
+			const dateStr = toISODateString(date);
+			const dayMeals = mealPlan[dateStr] ?? [];
+
+			return dayMeals.map(meal => {
+				const [hoursStr, minutesStr] = meal.time.split(':');
+				const start = new Date(date);
+				start.setHours(Number.parseInt(hoursStr ?? '0', 10), Number.parseInt(minutesStr ?? '0', 10), 0, 0);
+
+				const end = new Date(start);
+				end.setHours(start.getHours() + 1);
+
+				const recipeTitles = meal.recipeIds.map(id => getRecipeById(id)?.title ?? 'Unknown Recipe');
+				const recipeLinks = meal.recipeIds
+					.map(id => {
+						const r = getRecipeById(id);
+						return r ? `- ${r.title}: ${window.location.origin}/recipe/${id}` : '';
+					})
+					.filter(Boolean);
+
+				return {
+					description: `Meal: ${meal.mealName}\n\nRecipes:\n${recipeLinks.join('\n')}`,
+					end,
+					start,
+					summary: `${meal.mealName}: ${recipeTitles.join(', ')}`,
+					url: `${window.location.origin}/meal-planner?date=${toISODateString(currentSunday)}`,
+				};
+			});
+		});
+
+		if (events.length === 0) {
+			alert('No recipes planned for this week to export.');
+			return;
+		}
+
+		downloadICS(`meal-plan-${toISODateString(currentSunday)}.ics`, generateICS(events));
 	};
 
 	return (
@@ -143,6 +184,10 @@ export const MealPlannerPage = () => {
 					<Button className="font-bold" onClick={handleShare} size="sm" variant={isCopied ? 'secondary' : 'outline'}>
 						<Share2 className="h-4 w-4 mr-2" />
 						{isCopied ? 'Copied Link!' : 'Share Week'}
+					</Button>
+					<Button className="font-bold" onClick={handleExportICS} size="sm" variant="outline">
+						<Calendar className="h-4 w-4 mr-2" />
+						Export Calendar
 					</Button>
 					<div className="h-8 w-px bg-line mx-1 hidden sm:block" />
 					<Button disabled={isPrevDisabled} onClick={() => handleNavigate(-7)} size="sm" variant="outline">
