@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as storage from '#/lib/meal-plan-storage';
 import {
 	addRecipeToMealAtom,
+	importMealPlanAtom,
 	loadMealPlanAtom,
 	mealPlanAtom,
 	removeMealAtom,
@@ -11,6 +12,8 @@ import {
 
 // We mock the entire storage module using the aliased path
 vi.mock('#/lib/meal-plan-storage', () => ({
+	bulkMergeMeals: vi.fn(),
+	bulkSaveMeals: vi.fn(),
 	getMealPlan: vi.fn(),
 	purgeStaleData: vi.fn(),
 	removeMealFromDate: vi.fn(),
@@ -159,5 +162,25 @@ describe('meal-plan-atoms', () => {
 
 		expect(storage.removeMealFromDate).toHaveBeenCalledWith('2026-05-10', 'Dinner');
 		expect(store.get(mealPlanAtom)).toEqual({});
+	});
+
+	it('should import a shared meal plan using the overwrite strategy', async () => {
+		const mockPlan = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }] };
+		vi.mocked(storage.getMealPlan).mockResolvedValue(mockPlan);
+		vi.mocked(storage.bulkSaveMeals).mockResolvedValue(undefined);
+
+		await store.set(importMealPlanAtom, { plan: mockPlan, strategy: 'overwrite' });
+		expect(storage.bulkSaveMeals).toHaveBeenCalledWith(mockPlan);
+		expect(store.get(mealPlanAtom)).toEqual(mockPlan);
+	});
+
+	it('should import a shared meal plan using the merge strategy', async () => {
+		const mockPlan = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }] };
+		vi.mocked(storage.getMealPlan).mockResolvedValue(mockPlan);
+		vi.mocked(storage.bulkMergeMeals).mockResolvedValue(undefined);
+
+		await store.set(importMealPlanAtom, { plan: mockPlan, strategy: 'merge' });
+		expect(storage.bulkMergeMeals).toHaveBeenCalledWith(mockPlan);
+		expect(store.get(mealPlanAtom)).toEqual(mockPlan);
 	});
 });

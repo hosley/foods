@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
 import {
+	bulkMergeMeals,
 	bulkSaveMeals,
 	getMealPlan,
 	purgeStaleData,
@@ -93,8 +94,15 @@ export const removeMealAtom = atom(null, async (_get, set, { date, mealName }: {
 /**
  * An atom to import a shared meal plan.
  */
-export const importMealPlanAtom = atom(null, async (_get, set, plan: WeeklyMealPlan) => {
-	await bulkSaveMeals(plan);
-	const updatedPlan = await getMealPlan();
-	set(mealPlanAtom, updatedPlan);
-});
+export const importMealPlanAtom = atom(
+	null,
+	async (_get, set, { plan, strategy }: { plan: WeeklyMealPlan; strategy: 'merge' | 'overwrite' }) => {
+		if (strategy === 'merge') {
+			await bulkMergeMeals(plan);
+		} else {
+			await bulkSaveMeals(plan);
+		}
+		const updatedPlan = await getMealPlan();
+		set(mealPlanAtom, updatedPlan);
+	},
+);

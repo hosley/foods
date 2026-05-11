@@ -56,5 +56,10 @@ describe('date-utils', () => {
 		expect(date.getFullYear()).toBe(2026);
 		expect(date.getMonth()).toBe(4); // May (0-indexed)
 		expect(date.getDate()).toBe(1); // Default
+
+		const onlyYear = parseISODate('2026');
+		expect(onlyYear.getFullYear()).toBe(2026);
+		expect(onlyYear.getMonth()).toBe(0); // Jan
+		expect(onlyYear.getDate()).toBe(1);
 	});
 });

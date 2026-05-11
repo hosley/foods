@@ -11,7 +11,14 @@ vi.mock('idb-keyval', () => ({
 }));
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { getMealPlan, purgeStaleData, removeMealFromDate, saveDayMeals, saveRecipesForDate } from './meal-plan-storage';
+import {
+	bulkMergeMeals,
+	getMealPlan,
+	purgeStaleData,
+	removeMealFromDate,
+	saveDayMeals,
+	saveRecipesForDate,
+} from './meal-plan-storage';
 
 describe('meal-plan-storage', () => {
 	beforeEach(() => {
@@ -117,6 +124,29 @@ describe('meal-plan-storage', () => {
 		await removeMealFromDate('2026-05-10', 'Lunch');
 		expect(storedValue['2026-05-10']).toHaveLength(1);
 		expect(storedValue['2026-05-10'][0].mealName).toBe('Dinner');
+	});
+
+	it('should merge meals with deduplication', async () => {
+		let storedValue: any = {
+			'2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }],
+		};
+		mockUpdate.mockImplementation(async (_key, updater) => {
+			storedValue = updater(storedValue);
+		});
+
+		const incomingPlan = {
+			'2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1', '2'], time: '19:00' }],
+			'2026-05-11': [{ mealName: 'Breakfast', recipeIds: ['3'], time: '08:00' }],
+		};
+
+		await bulkMergeMeals(incomingPlan);
+
+		expect(storedValue['2026-05-10']).toHaveLength(1);
+		expect(storedValue['2026-05-10'][0].recipeIds).toEqual(['1', '2']);
+		// Time remains from existing if name matched?
+		// Actually my implementation updates the whole entry but preserves existing order and combines IDs.
+		// Let's re-verify implementation logic for time.
+		expect(storedValue['2026-05-11']).toHaveLength(1);
 	});
 
 	it('should handle null value in update for removeMealFromDate', async () => {

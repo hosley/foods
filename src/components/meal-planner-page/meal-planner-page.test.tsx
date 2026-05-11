@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createStore, Provider } from 'jotai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
 import { userSettingsAtom } from '../../atoms/user-settings/user-settings';
+import { encodeMealPlan } from '../../lib/sharing';
 import { MealPlannerPage } from './meal-planner-page';
 
 // Mock TanStack Router hooks
@@ -40,8 +41,8 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('renders the meal planner grid with 7 days and structured slots', () => {
-		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
+		vi.useFakeTimers();
 		vi.setSystemTime(today);
 
 		render(
@@ -57,8 +58,8 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('renders planned recipes in the correct slot', () => {
-		vi.useFakeTimers();
 		const todayStr = '2026-05-10';
+		vi.useFakeTimers();
 		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
 
 		const store = createStore();
@@ -78,14 +79,13 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		// Use Regex and check for existence in the list
 		expect(screen.getAllByText(/Fresh Basil Pesto Pasta/i).length).toBeGreaterThan(0);
 		vi.useRealTimers();
 	});
 
 	it('renders custom meal entries with their specific times', () => {
-		vi.useFakeTimers();
 		const todayStr = '2026-05-10';
+		vi.useFakeTimers();
 		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
 
 		const store = createStore();
@@ -112,8 +112,8 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('navigates between weeks', () => {
-		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
+		vi.useFakeTimers();
 		vi.setSystemTime(today);
 
 		render(
@@ -132,8 +132,8 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('disables "Previous" on current week without data', () => {
-		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
+		vi.useFakeTimers();
 		vi.setSystemTime(today);
 
 		render(
@@ -148,12 +148,11 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('enables "Previous" on current week WITH data in previous week', () => {
-		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
+		vi.useFakeTimers();
 		vi.setSystemTime(today);
 
 		const store = createStore();
-		// Previous week (May 3-9)
 		store.set(mealPlanAtom, {
 			'2026-05-05': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }],
 		});
@@ -170,8 +169,8 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('respects user defined default times', () => {
-		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
+		vi.useFakeTimers();
 		vi.setSystemTime(today);
 
 		const store = createStore();
@@ -196,7 +195,33 @@ describe('MealPlannerPage', () => {
 		vi.useRealTimers();
 	});
 
+	it('renders empty slots for existing meals with no recipeIds', () => {
+		const todayStr = '2026-05-10';
+		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
+
+		const store = createStore();
+		store.set(mealPlanAtom, {
+			[todayStr]: [
+				{
+					mealName: 'Snack',
+					recipeIds: [],
+					time: '15:00',
+				},
+			],
+		});
+
+		render(
+			<Provider store={store}>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		expect(screen.getByText('Snack')).toBeInTheDocument();
+		expect(screen.getAllByText(/No recipes/i).length).toBeGreaterThan(0);
+	});
+
 	it('shares the current week when the share button is clicked', async () => {
+		// Do NOT use fake timers for this test
 		render(
 			<Provider>
 				<MealPlannerPage />
@@ -206,7 +231,35 @@ describe('MealPlannerPage', () => {
 		const shareButton = screen.getByText('Share Week');
 		fireEvent.click(shareButton);
 
-		expect(navigator.clipboard.writeText).toHaveBeenCalled();
-		expect(await screen.findByText('Copied Link!')).toBeInTheDocument();
+		await waitFor(() => {
+			expect(navigator.clipboard.writeText).toHaveBeenCalled();
+			expect(screen.getByText('Copied Link!')).toBeInTheDocument();
+		});
+	});
+
+	it('clears the share parameter when onClearShare is called', async () => {
+		const mockPlan = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }] };
+		const shareCode = encodeMealPlan(mockPlan);
+		mockSearch = { share: shareCode };
+
+		render(
+			<Provider>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const cancelButton = await screen.findByRole('button', { name: /Cancel/i });
+		fireEvent.click(cancelButton);
+
+		await waitFor(() => {
+			expect(mockNavigate).toHaveBeenCalledWith({
+				replace: true,
+				search: expect.any(Function),
+			});
+		});
+
+		const searchUpdater = mockNavigate.mock.calls[0][0].search;
+		const result = searchUpdater({ date: '2026-05-10', share: shareCode });
+		expect(result).toEqual({ date: '2026-05-10' });
 	});
 });

@@ -69,7 +69,7 @@ export const saveDayMeals = async (date: string, meals: MealEntry[]): Promise<vo
 };
 
 /**
- * Saves multiple days of meals at once.
+ * Saves multiple days of meals at once, overwriting data for those specific dates.
  */
 export const bulkSaveMeals = async (plan: WeeklyMealPlan): Promise<void> => {
 	await update<WeeklyMealPlan>(MEAL_PLAN_KEY, val => {
@@ -78,6 +78,38 @@ export const bulkSaveMeals = async (plan: WeeklyMealPlan): Promise<void> => {
 			...current,
 			...plan,
 		};
+	});
+};
+
+/**
+ * Merges multiple days of meals into existing data.
+ */
+export const bulkMergeMeals = async (plan: WeeklyMealPlan): Promise<void> => {
+	await update<WeeklyMealPlan>(MEAL_PLAN_KEY, val => {
+		const current = val ?? {};
+		const merged = { ...current };
+
+		for (const date of Object.keys(plan)) {
+			const incomingDayMeals = plan[date] ?? [];
+			const currentDayMeals = current[date] ?? [];
+			const updatedDayMeals = [...currentDayMeals];
+
+			for (const incoming of incomingDayMeals) {
+				const existingIndex = updatedDayMeals.findIndex(m => m.mealName === incoming.mealName);
+				const existing = updatedDayMeals[existingIndex];
+				if (existing) {
+					updatedDayMeals[existingIndex] = {
+						...existing,
+						recipeIds: Array.from(new Set([...existing.recipeIds, ...incoming.recipeIds])),
+					};
+				} else {
+					updatedDayMeals.push(incoming);
+				}
+			}
+			merged[date] = updatedDayMeals;
+		}
+
+		return merged;
 	});
 };
 
