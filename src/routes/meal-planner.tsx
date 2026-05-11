@@ -4,6 +4,7 @@ import { MealPlannerPage } from '../components/meal-planner-page/meal-planner-pa
 
 const mealPlannerSearchSchema = z.object({
 	date: z.string().optional(),
+	share: z.string().optional(),
 });
 
 export const Route = createFileRoute('/meal-planner')({

@@ -14,14 +14,25 @@ import { Button } from '../design-system/button/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/card/card';
 import { AddRecipeDialog } from './add-recipe-dialog/add-recipe-dialog';
 import { EditMealDialog } from './edit-meal-dialog/edit-meal-dialog';
+import { ImportPreviewModal } from './import-preview-modal/import-preview-modal';
 
 export const MealPlannerPage = () => {
 	const mealPlan = useAtomValue(mealPlanAtom);
 	const settings = useAtomValue(userSettingsAtom);
 	const content = getMealPlannerContent();
 	const navigate = useNavigate({ from: '/meal-planner' });
-	const { date: searchDate } = useSearch({ from: '/meal-planner' });
+	const { date: searchDate, share: shareCode } = useSearch({ from: '/meal-planner' });
 	const [isCopied, setIsCopied] = useState(false);
+
+	const handleClearShare = () => {
+		navigate({
+			replace: true,
+			search: (prev: Record<string, string | undefined>) => {
+				const { share: _, ...rest } = prev;
+				return rest;
+			},
+		});
+	};
 
 	// Use local-safe parsing and formatting
 	const referenceDate = searchDate ? parseISODate(searchDate) : new Date();
@@ -72,6 +83,7 @@ export const MealPlannerPage = () => {
 
 	return (
 		<div className="space-y-8 rise-in">
+			<ImportPreviewModal onClearShare={handleClearShare} shareCode={shareCode} />
 			<header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div className="space-y-1">
 					<h1 className="text-3xl md:text-4xl font-bold font-heading text-sea-ink">{content.title}</h1>

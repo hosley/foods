@@ -28,7 +28,6 @@ export const getMealPlan = async (): Promise<WeeklyMealPlan> => {
 
 /**
  * Saves a list of recipe IDs to a specific date and meal slot.
- * For Issue 001, we use a simple implementation that can be expanded.
  */
 export const saveRecipesForDate = async (
 	date: string,
@@ -40,8 +39,6 @@ export const saveRecipesForDate = async (
 		const current = val ?? {};
 		const dayMeals = current[date] ?? [];
 
-		// For now, if the mealName already exists, we replace it.
-		// Otherwise, we add it.
 		const mealIndex = dayMeals.findIndex(m => m.mealName === mealName);
 		const newMeal: MealEntry = { mealName, recipeIds, time };
 
@@ -72,6 +69,19 @@ export const saveDayMeals = async (date: string, meals: MealEntry[]): Promise<vo
 };
 
 /**
+ * Saves multiple days of meals at once.
+ */
+export const bulkSaveMeals = async (plan: WeeklyMealPlan): Promise<void> => {
+	await update<WeeklyMealPlan>(MEAL_PLAN_KEY, val => {
+		const current = val ?? {};
+		return {
+			...current,
+			...plan,
+		};
+	});
+};
+
+/**
  * Removes a specific meal entry from a date.
  */
 export const removeMealFromDate = async (date: string, mealName: string): Promise<void> => {
@@ -89,11 +99,9 @@ export const removeMealFromDate = async (date: string, mealName: string): Promis
 
 /**
  * Identifies and deletes meal plan entries that are stale based on the Wednesday rule.
- * Data for a week (Sun-Sat) is cleared on the Wednesday following that Saturday.
  */
 export const purgeStaleData = async (): Promise<void> => {
 	const now = new Date();
-	// Sunday is 0, Wednesday is 3
 	const currentDay = now.getDay();
 	const daysSinceWednesday = (currentDay + 7 - 3) % 7;
 
@@ -101,7 +109,6 @@ export const purgeStaleData = async (): Promise<void> => {
 	mostRecentWednesday.setDate(now.getDate() - daysSinceWednesday);
 	mostRecentWednesday.setHours(0, 0, 0, 0);
 
-	// The Saturday immediately preceding that Wednesday
 	const lastSaturdayToPurge = new Date(mostRecentWednesday);
 	lastSaturdayToPurge.setDate(mostRecentWednesday.getDate() - 4);
 	const thresholdStr = lastSaturdayToPurge.toISOString().split('T')[0];
