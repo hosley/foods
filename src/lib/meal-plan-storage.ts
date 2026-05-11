@@ -1,4 +1,4 @@
-import { get, update } from 'idb-keyval';
+import { get, set, update } from 'idb-keyval';
 
 /**
  * Represents a single meal entry on a given date.
@@ -111,6 +111,13 @@ export const bulkMergeMeals = async (plan: WeeklyMealPlan): Promise<void> => {
 
 		return merged;
 	});
+};
+
+/**
+ * Replaces the entire meal plan data.
+ */
+export const replaceMealPlan = async (plan: WeeklyMealPlan): Promise<void> => {
+	await set(MEAL_PLAN_KEY, plan);
 };
 
 /**

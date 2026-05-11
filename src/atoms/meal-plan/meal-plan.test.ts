@@ -3,10 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as storage from '#/lib/meal-plan-storage';
 import {
 	addRecipeToMealAtom,
+	clearUndoSnapshotAtom,
 	importMealPlanAtom,
 	loadMealPlanAtom,
 	mealPlanAtom,
 	removeMealAtom,
+	undoImportAtom,
+	undoSnapshotAtom,
 	updateMealDetailsAtom,
 } from './meal-plan';
 
@@ -17,6 +20,7 @@ vi.mock('#/lib/meal-plan-storage', () => ({
 	getMealPlan: vi.fn(),
 	purgeStaleData: vi.fn(),
 	removeMealFromDate: vi.fn(),
+	replaceMealPlan: vi.fn(),
 	saveDayMeals: vi.fn(),
 	saveRecipesForDate: vi.fn(),
 }));
@@ -182,5 +186,31 @@ describe('meal-plan-atoms', () => {
 		await store.set(importMealPlanAtom, { plan: mockPlan, strategy: 'merge' });
 		expect(storage.bulkMergeMeals).toHaveBeenCalledWith(mockPlan);
 		expect(store.get(mealPlanAtom)).toEqual(mockPlan);
+	});
+
+	it('should take a snapshot before import and allow undo', async () => {
+		const initialState = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['initial'], time: '18:00' }] };
+		const importedState = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['imported'], time: '18:00' }] };
+
+		vi.mocked(storage.getMealPlan).mockResolvedValue(initialState);
+		await store.set(loadMealPlanAtom);
+
+		vi.mocked(storage.getMealPlan).mockResolvedValue(importedState);
+		await store.set(importMealPlanAtom, { plan: importedState, strategy: 'overwrite' });
+
+		expect(store.get(undoSnapshotAtom)).toEqual(initialState);
+		expect(store.get(mealPlanAtom)).toEqual(importedState);
+
+		// Perform Undo
+		await store.set(undoImportAtom);
+		expect(storage.replaceMealPlan).toHaveBeenCalledWith(initialState);
+		expect(store.get(mealPlanAtom)).toEqual(initialState);
+		expect(store.get(undoSnapshotAtom)).toBeNull();
+	});
+
+	it('should clear undo snapshot', () => {
+		store.set(undoSnapshotAtom, { test: [] } as any);
+		store.set(clearUndoSnapshotAtom);
+		expect(store.get(undoSnapshotAtom)).toBeNull();
 	});
 });

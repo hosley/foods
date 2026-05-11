@@ -5,6 +5,7 @@ import {
 	getMealPlan,
 	purgeStaleData,
 	removeMealFromDate,
+	replaceMealPlan,
 	saveDayMeals,
 	saveRecipesForDate,
 	type WeeklyMealPlan,
@@ -14,6 +15,12 @@ import {
  * The core atom containing the meal plan data.
  */
 export const mealPlanAtom = atom<WeeklyMealPlan>({});
+
+/**
+ * An atom containing the snapshot of the meal plan before the last import.
+ * Used for the "Undo" functionality.
+ */
+export const undoSnapshotAtom = atom<WeeklyMealPlan | null>(null);
 
 /**
  * An atom to trigger loading the meal plan from IndexedDB.
@@ -96,7 +103,11 @@ export const removeMealAtom = atom(null, async (_get, set, { date, mealName }: {
  */
 export const importMealPlanAtom = atom(
 	null,
-	async (_get, set, { plan, strategy }: { plan: WeeklyMealPlan; strategy: 'merge' | 'overwrite' }) => {
+	async (get, set, { plan, strategy }: { plan: WeeklyMealPlan; strategy: 'merge' | 'overwrite' }) => {
+		// Take a full snapshot before modifying for Undo support
+		const current = get(mealPlanAtom);
+		set(undoSnapshotAtom, current);
+
 		if (strategy === 'merge') {
 			await bulkMergeMeals(plan);
 		} else {
@@ -106,3 +117,22 @@ export const importMealPlanAtom = atom(
 		set(mealPlanAtom, updatedPlan);
 	},
 );
+
+/**
+ * An atom to revert the last import.
+ */
+export const undoImportAtom = atom(null, async (get, set) => {
+	const snapshot = get(undoSnapshotAtom);
+	if (!snapshot) return;
+
+	await replaceMealPlan(snapshot);
+	set(undoSnapshotAtom, null);
+	set(mealPlanAtom, snapshot);
+});
+
+/**
+ * An atom to clear the undo snapshot.
+ */
+export const clearUndoSnapshotAtom = atom(null, (_get, set) => {
+	set(undoSnapshotAtom, null);
+});

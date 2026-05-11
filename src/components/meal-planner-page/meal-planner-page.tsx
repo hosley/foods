@@ -1,8 +1,8 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useAtomValue } from 'jotai';
-import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
-import { useState } from 'react';
-import { mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { ChevronLeft, ChevronRight, Share2, Undo2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { clearUndoSnapshotAtom, mealPlanAtom, undoImportAtom, undoSnapshotAtom } from '../../atoms/meal-plan/meal-plan';
 import { userSettingsAtom } from '../../atoms/user-settings/user-settings';
 import { DEFAULT_MEAL_SLOTS } from '../../constants/meal-slots';
 import { addDays, getWeekDates, parseISODate, toISODateString } from '../../lib/date-utils';
@@ -18,11 +18,46 @@ import { ImportPreviewModal } from './import-preview-modal/import-preview-modal'
 
 export const MealPlannerPage = () => {
 	const mealPlan = useAtomValue(mealPlanAtom);
+	const undoSnapshot = useAtomValue(undoSnapshotAtom);
+	const undoImport = useSetAtom(undoImportAtom);
+	const clearUndo = useSetAtom(clearUndoSnapshotAtom);
+
 	const settings = useAtomValue(userSettingsAtom);
 	const content = getMealPlannerContent();
 	const navigate = useNavigate({ from: '/meal-planner' });
 	const { date: searchDate, share: shareCode } = useSearch({ from: '/meal-planner' });
 	const [isCopied, setIsCopied] = useState(false);
+	const [secondsLeft, setSecondsLeft] = useState(60);
+
+	// Reset countdown when a new snapshot arrives
+	useEffect(() => {
+		if (undoSnapshot) {
+			setSecondsLeft(60);
+		}
+	}, [undoSnapshot]);
+
+	// Countdown logic and auto-clear after 60s
+	useEffect(() => {
+		if (undoSnapshot) {
+			const interval = setInterval(() => {
+				setSecondsLeft(prev => {
+					if (prev <= 1) {
+						clearUndo();
+						return 0;
+					}
+					return prev - 1;
+				});
+			}, 1000);
+			return () => clearInterval(interval);
+		}
+	}, [undoSnapshot, clearUndo]);
+
+	// Clear undo when navigating away (unmounting)
+	useEffect(() => {
+		return () => {
+			clearUndo();
+		};
+	}, [clearUndo]);
 
 	const handleClearShare = () => {
 		navigate({
@@ -61,7 +96,6 @@ export const MealPlannerPage = () => {
 	};
 
 	const handleShare = async () => {
-		// Extract only data for the current week to share
 		const weekData = weekDates.reduce((acc, date) => {
 			const ds = toISODateString(date);
 			if (mealPlan[ds]) {
@@ -92,6 +126,20 @@ export const MealPlannerPage = () => {
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
+					{undoSnapshot && (
+						<div className="flex items-center animate-in fade-in slide-in-from-right-2 duration-300">
+							<Button
+								className="font-bold border-palm text-palm hover:bg-palm/5"
+								onClick={() => undoImport()}
+								size="sm"
+								variant="outline"
+							>
+								<Undo2 className="h-4 w-4 mr-2" />
+								Undo ({secondsLeft}s)
+							</Button>
+							<div className="h-4 w-px bg-line mx-2" />
+						</div>
+					)}
 					<Button className="font-bold" onClick={handleShare} size="sm" variant={isCopied ? 'secondary' : 'outline'}>
 						<Share2 className="h-4 w-4 mr-2" />
 						{isCopied ? 'Copied Link!' : 'Share Week'}
