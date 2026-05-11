@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import {
 	createMemoryHistory,
 	createRootRoute,
@@ -28,9 +29,18 @@ const meta: Meta<typeof LandingPage> = {
 		),
 	],
 	title: 'Features/LandingPage',
-};
+} satisfies Meta<typeof LandingPage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await expect(await canvas.findByText(/Discover Exceptional Recipes/i)).toBeInTheDocument();
+
+		// Verify recipe cards render
+		await expect(canvas.getByText(/Fresh Basil Pesto Pasta/i)).toBeInTheDocument();
+		await expect(canvas.getByText(/Sear-Roasted Chicken Thighs/i)).toBeInTheDocument();
+	},
+};

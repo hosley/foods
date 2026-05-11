@@ -6,30 +6,33 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router';
-import { Header } from './header';
+import { Provider } from 'jotai';
+import { MealPlannerPage } from './meal-planner-page';
 
 const rootRoute = createRootRoute();
 const indexRoute = createRoute({
-	component: () => null,
+	component: MealPlannerPage,
 	getParentRoute: () => rootRoute,
-	path: '/',
+	path: '/meal-planner',
 });
 const routeTree = rootRoute.addChildren([indexRoute]);
-const history = createMemoryHistory({ initialEntries: ['/'] });
-const router = createRouter({ history, routeTree });
 
-const meta: Meta<typeof Header> = {
-	component: Header,
+const router = createRouter({
+	history: createMemoryHistory({ initialEntries: ['/meal-planner'] }),
+	routeTree,
+});
+
+const meta = {
+	component: MealPlannerPage,
 	decorators: [
-		Story => (
-			<RouterProvider router={router as any}>
-				<Story />
-			</RouterProvider>
+		() => (
+			<Provider>
+				<RouterProvider router={router} />
+			</Provider>
 		),
 	],
-	tags: ['autodocs'],
-	title: 'Shared/Header',
-};
+	title: 'Pages/MealPlannerPage',
+} satisfies Meta<typeof MealPlannerPage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
