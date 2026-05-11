@@ -78,7 +78,7 @@ vi.mock('#/components/ui/dialog', () => {
 		DialogHeader: MockComponent,
 		DialogOverlay: () => null,
 		DialogPortal: MockComponent,
-		DialogTitle: MockComponent,
+		DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
 		DialogTrigger: TriggerMock,
 	};
 });
@@ -94,7 +94,7 @@ vi.mock('#/components/ui/sheet', () => {
 		SheetHeader: MockComponent,
 		SheetOverlay: () => null,
 		SheetPortal: MockComponent,
-		SheetTitle: MockComponent,
+		SheetTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
 		SheetTrigger: TriggerMock,
 	};
 });

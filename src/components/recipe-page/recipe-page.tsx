@@ -1,12 +1,11 @@
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { Bookmark, BookmarkCheck, Calendar, ChefHat, Clock } from 'lucide-react';
-import { addRecipeToMealAtom, mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
+import { useAtom, useAtomValue } from 'jotai';
+import { Bookmark, BookmarkCheck, ChefHat, Clock } from 'lucide-react';
 import { savedRecipesAtom, toggleSavedRecipeAtom } from '../../atoms/saved-recipes/saved-recipes';
-import type { MealEntry } from '../../lib/meal-plan-storage';
 import { toTitleCase } from '../../lib/utils';
 import type { Recipe } from '../../recipes/schema';
 import { getRecipePageContent } from '../../selectors/get-content/get-content';
 import { Button } from '../design-system/button/button';
+import { AddToMealPlanModal } from './add-to-meal-plan-modal/add-to-meal-plan-modal';
 
 export interface RecipePageProps {
 	recipe: Recipe;
@@ -15,14 +14,9 @@ export interface RecipePageProps {
 export const RecipePage = ({ recipe }: RecipePageProps) => {
 	const [_savedRecipes, toggleSaved] = useAtom(toggleSavedRecipeAtom);
 	const savedRecipeIds = useAtomValue(savedRecipesAtom);
-	const addRecipeToMeal = useSetAtom(addRecipeToMealAtom);
-	const mealPlan = useAtomValue(mealPlanAtom);
 	const content = getRecipePageContent();
 
 	const isSaved = savedRecipeIds.includes(recipe.id);
-
-	const today = new Date().toISOString().split('T')[0] as string;
-	const isPlannedForToday = mealPlan[today]?.some((m: MealEntry) => m.recipeIds.includes(recipe.id));
 
 	return (
 		<article className="max-w-4xl mx-auto rise-in space-y-12">
@@ -50,22 +44,7 @@ export const RecipePage = ({ recipe }: RecipePageProps) => {
 							{isSaved ? <BookmarkCheck className="mr-2 h-5 w-5" /> : <Bookmark className="mr-2 h-5 w-5" />}
 							{isSaved ? content.saveButton.saved : content.saveButton.default}
 						</Button>
-						<Button
-							className="font-bold"
-							onClick={() =>
-								addRecipeToMeal({
-									date: today,
-									mealName: 'Dinner',
-									recipeId: recipe.id,
-									time: '18:00',
-								})
-							}
-							size="lg"
-							variant={isPlannedForToday ? 'secondary' : 'outline'}
-						>
-							<Calendar className="mr-2 h-5 w-5" />
-							{isPlannedForToday ? 'Planned for Today' : 'Plan for Today'}
-						</Button>
+						<AddToMealPlanModal recipeId={recipe.id} recipeTitle={recipe.title} />
 					</div>
 				</div>
 

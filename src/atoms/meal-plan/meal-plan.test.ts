@@ -1,11 +1,20 @@
 import { createStore } from 'jotai';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as storage from '#/lib/meal-plan-storage';
-import { addRecipeToMealAtom, loadMealPlanAtom, mealPlanAtom } from './meal-plan';
+import {
+	addRecipeToMealAtom,
+	loadMealPlanAtom,
+	mealPlanAtom,
+	removeMealAtom,
+	updateMealDetailsAtom,
+} from './meal-plan';
 
+// We mock the entire storage module using the aliased path
 vi.mock('#/lib/meal-plan-storage', () => ({
 	getMealPlan: vi.fn(),
 	purgeStaleData: vi.fn(),
+	removeMealFromDate: vi.fn(),
+	saveDayMeals: vi.fn(),
 	saveRecipesForDate: vi.fn(),
 }));
 
@@ -36,7 +45,9 @@ describe('meal-plan-atoms', () => {
 		vi.mocked(storage.purgeStaleData).mockResolvedValue(undefined);
 		await store.set(loadMealPlanAtom);
 
-		const updatedPlan = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }] };
+		const updatedPlan = {
+			'2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }],
+		};
 		vi.mocked(storage.getMealPlan).mockResolvedValue(updatedPlan);
 		vi.mocked(storage.saveRecipesForDate).mockResolvedValue(undefined);
 
@@ -89,5 +100,64 @@ describe('meal-plan-atoms', () => {
 		});
 
 		expect(storage.saveRecipesForDate).toHaveBeenCalledWith('2026-05-10', 'Dinner', '18:00', ['1', '2']);
+	});
+
+	it('should update meal details (name and time)', async () => {
+		const existingPlan = {
+			'2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }],
+		};
+		vi.mocked(storage.getMealPlan).mockResolvedValue(existingPlan);
+		await store.set(loadMealPlanAtom);
+
+		const updatedPlan = {
+			'2026-05-10': [{ mealName: 'Festive Dinner', recipeIds: ['1'], time: '20:00' }],
+		};
+		vi.mocked(storage.getMealPlan).mockResolvedValue(updatedPlan);
+		vi.mocked(storage.saveDayMeals).mockResolvedValue(undefined);
+
+		await store.set(updateMealDetailsAtom, {
+			date: '2026-05-10',
+			newMealName: 'Festive Dinner',
+			newTime: '20:00',
+			oldMealName: 'Dinner',
+		});
+
+		expect(storage.saveDayMeals).toHaveBeenCalledWith('2026-05-10', [
+			{ mealName: 'Festive Dinner', recipeIds: ['1'], time: '20:00' },
+		]);
+		expect(store.get(mealPlanAtom)).toEqual(updatedPlan);
+	});
+
+	it('should do nothing when updating a non-existent meal', async () => {
+		vi.mocked(storage.getMealPlan).mockResolvedValue({});
+		await store.set(loadMealPlanAtom);
+
+		await store.set(updateMealDetailsAtom, {
+			date: '2026-05-10',
+			newMealName: 'Festive Dinner',
+			newTime: '20:00',
+			oldMealName: 'Dinner',
+		});
+
+		expect(storage.saveDayMeals).not.toHaveBeenCalled();
+	});
+
+	it('should remove a meal entry', async () => {
+		const existingPlan = {
+			'2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }],
+		};
+		vi.mocked(storage.getMealPlan).mockResolvedValue(existingPlan);
+		await store.set(loadMealPlanAtom);
+
+		vi.mocked(storage.getMealPlan).mockResolvedValue({});
+		vi.mocked(storage.removeMealFromDate).mockResolvedValue(undefined);
+
+		await store.set(removeMealAtom, {
+			date: '2026-05-10',
+			mealName: 'Dinner',
+		});
+
+		expect(storage.removeMealFromDate).toHaveBeenCalledWith('2026-05-10', 'Dinner');
+		expect(store.get(mealPlanAtom)).toEqual({});
 	});
 });

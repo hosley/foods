@@ -1,15 +1,6 @@
-import { vi } from 'vitest';
-
-// Mock storage via aliased path FIRST
-vi.mock('#/lib/meal-plan-storage', () => ({
-	getMealPlan: vi.fn().mockResolvedValue({}),
-	purgeStaleData: vi.fn().mockResolvedValue(undefined),
-	saveRecipesForDate: vi.fn().mockResolvedValue(undefined),
-}));
-
 import { fireEvent, render, screen } from '@testing-library/react';
 import { atom, Provider } from 'jotai';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Recipe } from '../../recipes/schema';
 import { RecipePage } from './recipe-page';
 
@@ -62,7 +53,8 @@ describe('RecipePage', () => {
 			</Provider>,
 		);
 
-		expect(screen.getByText('Test Recipe')).toBeInTheDocument();
+		// Use getAllByText for titles that might appear multiple times (header and modal)
+		expect(screen.getAllByText('Test Recipe').length).toBeGreaterThan(0);
 		expect(screen.getByText('A delicious test recipe')).toBeInTheDocument();
 		expect(screen.getByText('Testian')).toBeInTheDocument();
 		expect(screen.getByText('Mock')).toBeInTheDocument();
@@ -90,16 +82,13 @@ describe('RecipePage', () => {
 		expect(screen.getByRole('button', { name: /saved/i })).toBeInTheDocument();
 	});
 
-	it('shows "Planned for Today" and handles click', async () => {
+	it('renders the "Add to Meal Plan" button', () => {
 		render(
 			<Provider>
 				<RecipePage recipe={mockRecipe} />
 			</Provider>,
 		);
 
-		const planButton = screen.getByText('Plan for Today');
-		fireEvent.click(planButton);
-
-		expect(await screen.findByText('Planned for Today')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /add to meal plan/i })).toBeInTheDocument();
 	});
 });
