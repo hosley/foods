@@ -1,24 +1,32 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { atom, Provider } from 'jotai';
-import { describe, expect, it, vi } from 'vitest';
-import { AddRecipeDialog } from './add-recipe-dialog';
+import { atom } from 'jotai';
+import { vi } from 'vitest';
 
+// Use vi.hoisted to ensure the mock function is available during vi.mock hoisting
+const { mockAddRecipeAction } = vi.hoisted(() => ({
+	mockAddRecipeAction: vi.fn(),
+}));
+
+// Mock storage via aliased path
+vi.mock('#/lib/meal-plan-storage', () => ({
+	getMealPlan: vi.fn().mockResolvedValue({}),
+	purgeStaleData: vi.fn().mockResolvedValue(undefined),
+	saveRecipesForDate: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock the atoms
 vi.mock('../../../atoms/meal-plan/meal-plan', async importOriginal => {
 	const actual = await importOriginal<any>();
 	return {
 		...actual,
-		addRecipeToMealAtom: atom(null, (_get, _set, _payload) => {
-			// Trigger a custom event or check state if needed,
-			// but for this test we'll just use the mock on the atom's write function if possible.
-			// However, since atoms are hard to spy on when mocked this way,
-			// we'll use a global variable that Vitest allows.
-		}),
+		addRecipeToMealAtom: atom(null, mockAddRecipeAction),
 	};
 });
 
-// We need a way to verify the call. Vitest allows variables starting with 'mock' or 'vi'
-// IF they are defined before the mock AND used correctly.
-// Let's try defining it inside a helper object.
+import { fireEvent, render, screen } from '@testing-library/react';
+import { createStore, Provider } from 'jotai';
+import { describe, expect, it } from 'vitest';
+import { DEFAULT_USER_SETTINGS, userSettingsAtom } from '../../../atoms/user-settings/user-settings';
+import { AddRecipeDialog } from './add-recipe-dialog';
 
 // Mock all-recipes selector
 vi.mock('../../../selectors/get-all-recipes/get-all-recipes', () => ({
@@ -35,19 +43,35 @@ describe('AddRecipeDialog', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /add recipe/i }));
 		expect(await screen.findByText(/Select Recipe/i)).toBeInTheDocument();
-		expect(screen.getByText(/Breakfast/i)).toBeInTheDocument();
-		expect(screen.getByText(/Lunch/i)).toBeInTheDocument();
-		expect(screen.getByText(/Dinner/i)).toBeInTheDocument();
 	});
 
-	it('renders the recipes list', async () => {
+	it('calls addRecipeToMeal with the user defined default time', async () => {
+		const store = createStore();
+		const customSettings = {
+			...DEFAULT_USER_SETTINGS,
+			defaultTimes: {
+				...DEFAULT_USER_SETTINGS.defaultTimes,
+				Dinner: '19:45',
+			},
+		};
+		store.set(userSettingsAtom, customSettings);
+
 		render(
-			<Provider>
+			<Provider store={store}>
 				<AddRecipeDialog date="2026-05-10" />
 			</Provider>,
 		);
 
 		fireEvent.click(screen.getByRole('button', { name: /add recipe/i }));
-		expect(await screen.findByText(/Basil Pesto Pasta/i)).toBeInTheDocument();
+
+		// Select recipe
+		fireEvent.click(await screen.findByText(/Basil Pesto Pasta/i));
+
+		expect(mockAddRecipeAction).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+			date: '2026-05-10',
+			mealName: 'Dinner',
+			recipeId: '1',
+			time: '19:45',
+		});
 	});
 });

@@ -2,6 +2,7 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
+import { userSettingsAtom } from '../../atoms/user-settings/user-settings';
 import { DEFAULT_MEAL_SLOTS } from '../../constants/meal-slots';
 import { addDays, getWeekDates, parseISODate, toISODateString } from '../../lib/date-utils';
 import { getMealPlannerContent } from '../../selectors/get-content/get-content';
@@ -12,6 +13,7 @@ import { AddRecipeDialog } from './add-recipe-dialog/add-recipe-dialog';
 
 export const MealPlannerPage = () => {
 	const mealPlan = useAtomValue(mealPlanAtom);
+	const settings = useAtomValue(userSettingsAtom);
 	const content = getMealPlannerContent();
 	const navigate = useNavigate({ from: '/meal-planner' });
 	const { date: searchDate } = useSearch({ from: '/meal-planner' });
@@ -75,6 +77,9 @@ export const MealPlannerPage = () => {
 							<CardContent className="p-4 flex-1 space-y-6">
 								{DEFAULT_MEAL_SLOTS.map(slot => {
 									const meal = dayMeals.find(m => m.mealName === slot.name);
+									const mealName = slot.name as keyof typeof settings.defaultTimes;
+									const displayTime = settings.defaultTimes[mealName] || slot.defaultTime;
+
 									return (
 										<div className="space-y-2" key={slot.name}>
 											<div className="flex items-center justify-between">
@@ -82,7 +87,7 @@ export const MealPlannerPage = () => {
 													{slot.name}
 												</h3>
 												<span className="text-[10px] text-sea-ink-soft font-mono bg-sea-ink/5 px-1 rounded">
-													{slot.defaultTime}
+													{displayTime}
 												</span>
 											</div>
 											<ul className="space-y-1 min-h-[2rem]">

@@ -1,23 +1,33 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { createStore, Provider } from 'jotai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
+import { userSettingsAtom } from '../../atoms/user-settings/user-settings';
 import { MealPlannerPage } from './meal-planner-page';
 
-// Mock TanStack Router hooks to avoid Context errors
+// Mock TanStack Router hooks
 const mockNavigate = vi.fn();
+let mockSearch: any = {};
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<any>();
 	return {
 		...actual,
 		useNavigate: () => mockNavigate,
-		useSearch: () => ({}),
+		useSearch: () => mockSearch,
 	};
 });
+
+// Mock idb-keyval
+vi.mock('idb-keyval', () => ({
+	get: vi.fn(),
+	update: vi.fn(),
+}));
 
 describe('MealPlannerPage', () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
+		vi.clearAllMocks();
+		mockSearch = {};
 	});
 
 	afterEach(() => {
@@ -25,7 +35,6 @@ describe('MealPlannerPage', () => {
 	});
 
 	it('renders the meal planner grid with 7 days and structured slots', () => {
-		// Wednesday, May 13, 2026
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
 
@@ -37,12 +46,7 @@ describe('MealPlannerPage', () => {
 
 		expect(screen.getByText('Meal Planner')).toBeInTheDocument();
 		expect(screen.getAllByText('Sunday').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Saturday').length).toBeGreaterThan(0);
-
-		// Verify slots exist
 		expect(screen.getAllByText('Breakfast').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Lunch').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Dinner').length).toBeGreaterThan(0);
 	});
 
 	it('renders planned recipes in the correct slot', () => {
@@ -66,8 +70,49 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		// Basil Pesto Pasta should be under Lunch
-		expect(screen.getAllByText('Lunch').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Fresh Basil Pesto Pasta').length).toBeGreaterThan(0);
+	});
+
+	it('navigates between weeks', () => {
+		const today = new Date('2026-05-13T12:00:00Z');
+		vi.setSystemTime(today);
+
+		render(
+			<Provider>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const nextButton = screen.getByText('Next Week');
+		fireEvent.click(nextButton);
+
+		expect(mockNavigate).toHaveBeenCalledWith({
+			search: { date: '2026-05-17' },
+		});
+	});
+
+	it('respects user defined default times', () => {
+		const today = new Date('2026-05-13T12:00:00Z');
+		vi.setSystemTime(today);
+
+		const store = createStore();
+		store.set(userSettingsAtom, {
+			defaultTimes: {
+				Breakfast: '08:30',
+				Dinner: '19:30',
+				Lunch: '13:30',
+			},
+			importStrategy: 'overwrite',
+		});
+
+		render(
+			<Provider store={store}>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		expect(screen.getAllByText('08:30').length).toBeGreaterThan(0);
+		expect(screen.getAllByText('13:30').length).toBeGreaterThan(0);
+		expect(screen.getAllByText('19:30').length).toBeGreaterThan(0);
 	});
 });

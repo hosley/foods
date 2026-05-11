@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { getCommonContent, getNavContent } from '../../../selectors/get-content/get-content';
 import { ThemeToggle } from '../theme-toggle/theme-toggle';
+import { UserSettingsDialog } from '../user-settings-dialog/user-settings-dialog';
 
 export const Header = () => {
 	const common = getCommonContent();
@@ -24,6 +25,7 @@ export const Header = () => {
 
 				<div className="ml-auto flex items-center gap-1.5 sm:ml-0 sm:gap-2">
 					<ThemeToggle />
+					<UserSettingsDialog />
 				</div>
 
 				<div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-2 sm:w-auto sm:flex-nowrap sm:pb-0">

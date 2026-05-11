@@ -1,7 +1,8 @@
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { addRecipeToMealAtom } from '../../../atoms/meal-plan/meal-plan';
+import { userSettingsAtom } from '../../../atoms/user-settings/user-settings';
 import { DEFAULT_MEAL_SLOTS } from '../../../constants/meal-slots';
 import { getAllRecipes } from '../../../selectors/get-all-recipes/get-all-recipes';
 import { Button } from '../../design-system/button/button';
@@ -23,15 +24,17 @@ export const AddRecipeDialog = ({ date }: AddRecipeDialogProps) => {
 	const [open, setOpen] = useState(false);
 	const [selectedSlot, setSelectedSlot] = useState(DEFAULT_MEAL_SLOTS[2]); // Default to Dinner
 	const addRecipeToMeal = useSetAtom(addRecipeToMealAtom);
+	const settings = useAtomValue(userSettingsAtom);
 	const allRecipes = getAllRecipes();
 
 	const handleSelect = (recipeId: string) => {
 		if (selectedSlot) {
+			const mealName = selectedSlot.name as keyof typeof settings.defaultTimes;
 			addRecipeToMeal({
 				date,
 				mealName: selectedSlot.name,
 				recipeId,
-				time: selectedSlot.defaultTime,
+				time: settings.defaultTimes[mealName] || selectedSlot.defaultTime,
 			});
 			setOpen(false);
 		}
