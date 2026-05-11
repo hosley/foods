@@ -1,11 +1,17 @@
-import * as idb from 'idb-keyval';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMealPlan, purgeStaleData, removeMealFromDate, saveDayMeals, saveRecipesForDate } from './meal-plan-storage';
+import { vi } from 'vitest';
+
+const { mockGet, mockUpdate } = vi.hoisted(() => ({
+	mockGet: vi.fn(),
+	mockUpdate: vi.fn(),
+}));
 
 vi.mock('idb-keyval', () => ({
-	get: vi.fn(),
-	update: vi.fn(),
+	get: mockGet,
+	update: mockUpdate,
 }));
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { getMealPlan, purgeStaleData, removeMealFromDate, saveDayMeals, saveRecipesForDate } from './meal-plan-storage';
 
 describe('meal-plan-storage', () => {
 	beforeEach(() => {
@@ -18,21 +24,21 @@ describe('meal-plan-storage', () => {
 	});
 
 	it('should return an empty object if no plan is found', async () => {
-		vi.mocked(idb.get).mockResolvedValue(undefined);
+		mockGet.mockResolvedValue(undefined);
 		const plan = await getMealPlan();
 		expect(plan).toEqual({});
 	});
 
 	it('should return the saved plan', async () => {
 		const mockPlan = { '2026-05-10': [{ mealName: 'Dinner', recipeIds: ['1'], time: '18:00' }] };
-		vi.mocked(idb.get).mockResolvedValue(mockPlan);
+		mockGet.mockResolvedValue(mockPlan);
 		const plan = await getMealPlan();
 		expect(plan).toEqual(mockPlan);
 	});
 
 	it('should add a new meal to a date', async () => {
 		let storedValue: any = {};
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -46,7 +52,7 @@ describe('meal-plan-storage', () => {
 		let storedValue: any = {
 			'2026-05-10': [{ mealName: 'Lunch', recipeIds: ['2'], time: '12:00' }],
 		};
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -63,7 +69,7 @@ describe('meal-plan-storage', () => {
 		let storedValue: any = {
 			'2026-05-10': [{ mealName: 'Lunch', recipeIds: ['2'], time: '12:00' }],
 		};
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -78,7 +84,7 @@ describe('meal-plan-storage', () => {
 
 	it('should save all meals for a day', async () => {
 		let storedValue: any = {};
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -89,7 +95,7 @@ describe('meal-plan-storage', () => {
 
 	it('should handle null value in update for saveDayMeals', async () => {
 		let storedValue: any = null;
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -104,7 +110,7 @@ describe('meal-plan-storage', () => {
 				{ mealName: 'Dinner', recipeIds: ['2'], time: '18:00' },
 			],
 		};
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -115,7 +121,7 @@ describe('meal-plan-storage', () => {
 
 	it('should handle null value in update for removeMealFromDate', async () => {
 		let storedValue: any = null;
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -131,7 +137,7 @@ describe('meal-plan-storage', () => {
 			'2026-05-10': [{ mealName: 'Dinner', recipeIds: ['2'], time: '18:00' }],
 		};
 
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -150,7 +156,7 @@ describe('meal-plan-storage', () => {
 			'2026-05-09': [{ mealName: 'Dinner', recipeIds: ['keep'], time: '18:00' }],
 		};
 
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -163,7 +169,7 @@ describe('meal-plan-storage', () => {
 
 	it('should handle null value in update in saveRecipesForDate', async () => {
 		let storedValue: any = null;
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -175,7 +181,7 @@ describe('meal-plan-storage', () => {
 
 	it('should handle null value in update in purgeStaleData', async () => {
 		let storedValue: any = null;
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 
@@ -190,7 +196,7 @@ describe('meal-plan-storage', () => {
 			'2026-05-10': undefined,
 		};
 
-		vi.mocked(idb.update).mockImplementation(async (_key, updater) => {
+		mockUpdate.mockImplementation(async (_key, updater) => {
 			storedValue = updater(storedValue);
 		});
 

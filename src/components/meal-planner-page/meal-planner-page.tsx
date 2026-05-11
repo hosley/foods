@@ -1,10 +1,13 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { useState } from 'react';
 import { mealPlanAtom } from '../../atoms/meal-plan/meal-plan';
 import { userSettingsAtom } from '../../atoms/user-settings/user-settings';
 import { DEFAULT_MEAL_SLOTS } from '../../constants/meal-slots';
 import { addDays, getWeekDates, parseISODate, toISODateString } from '../../lib/date-utils';
+import type { WeeklyMealPlan } from '../../lib/meal-plan-storage';
+import { generateShareUrl } from '../../lib/sharing';
 import { getMealPlannerContent } from '../../selectors/get-content/get-content';
 import { getRecipeById } from '../../selectors/get-recipe-by-id/get-recipe-by-id';
 import { Button } from '../design-system/button/button';
@@ -18,6 +21,7 @@ export const MealPlannerPage = () => {
 	const content = getMealPlannerContent();
 	const navigate = useNavigate({ from: '/meal-planner' });
 	const { date: searchDate } = useSearch({ from: '/meal-planner' });
+	const [isCopied, setIsCopied] = useState(false);
 
 	// Use local-safe parsing and formatting
 	const referenceDate = searchDate ? parseISODate(searchDate) : new Date();
@@ -45,17 +49,48 @@ export const MealPlannerPage = () => {
 		});
 	};
 
+	const handleShare = async () => {
+		// Extract only data for the current week to share
+		const weekData = weekDates.reduce((acc, date) => {
+			const ds = toISODateString(date);
+			if (mealPlan[ds]) {
+				acc[ds] = mealPlan[ds];
+			}
+			return acc;
+		}, {} as WeeklyMealPlan);
+
+		const shareUrl = generateShareUrl(weekData, window.location.origin + window.location.pathname);
+
+		try {
+			await navigator.clipboard.writeText(shareUrl);
+			setIsCopied(true);
+			setTimeout(() => setIsCopied(false), 2000);
+		} catch (err) {
+			console.error('Failed to copy share URL:', err);
+		}
+	};
+
 	return (
 		<div className="space-y-8 rise-in">
 			<header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-				<h1 className="text-3xl md:text-4xl font-bold font-heading text-sea-ink">{content.title}</h1>
-				<div className="flex items-center gap-2">
-					<Button disabled={isPrevDisabled} onClick={() => handleNavigate(-7)} variant="outline">
-						<ChevronLeft className="h-4 w-4 mr-2" />
-						Previous Week
+				<div className="space-y-1">
+					<h1 className="text-3xl md:text-4xl font-bold font-heading text-sea-ink">{content.title}</h1>
+					<p className="text-xs text-sea-ink-soft">
+						{toISODateString(weekDates[0] as Date)} to {toISODateString(weekDates[6] as Date)}
+					</p>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button className="font-bold" onClick={handleShare} size="sm" variant={isCopied ? 'secondary' : 'outline'}>
+						<Share2 className="h-4 w-4 mr-2" />
+						{isCopied ? 'Copied Link!' : 'Share Week'}
 					</Button>
-					<Button disabled={isNextDisabled} onClick={() => handleNavigate(7)} variant="outline">
-						Next Week
+					<div className="h-8 w-px bg-line mx-1 hidden sm:block" />
+					<Button disabled={isPrevDisabled} onClick={() => handleNavigate(-7)} size="sm" variant="outline">
+						<ChevronLeft className="h-4 w-4 mr-2" />
+						Previous
+					</Button>
+					<Button disabled={isNextDisabled} onClick={() => handleNavigate(7)} size="sm" variant="outline">
+						Next
 						<ChevronRight className="h-4 w-4 ml-2" />
 					</Button>
 				</div>

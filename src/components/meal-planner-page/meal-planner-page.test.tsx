@@ -25,16 +25,22 @@ vi.mock('idb-keyval', () => ({
 
 describe('MealPlannerPage', () => {
 	beforeEach(() => {
-		vi.useFakeTimers();
 		vi.clearAllMocks();
 		mockSearch = {};
+
+		// Stub location for sharing tests
+		vi.stubGlobal('location', {
+			origin: 'http://localhost:3000',
+			pathname: '/meal-planner',
+		});
 	});
 
 	afterEach(() => {
-		vi.useRealTimers();
+		vi.unstubAllGlobals();
 	});
 
 	it('renders the meal planner grid with 7 days and structured slots', () => {
+		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
 
@@ -47,9 +53,11 @@ describe('MealPlannerPage', () => {
 		expect(screen.getByText('Meal Planner')).toBeInTheDocument();
 		expect(screen.getAllByText('Sunday').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Breakfast').length).toBeGreaterThan(0);
+		vi.useRealTimers();
 	});
 
 	it('renders planned recipes in the correct slot', () => {
+		vi.useFakeTimers();
 		const todayStr = '2026-05-10';
 		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
 
@@ -70,10 +78,13 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
+		// Use Regex and check for existence in the list
 		expect(screen.getAllByText(/Fresh Basil Pesto Pasta/i).length).toBeGreaterThan(0);
+		vi.useRealTimers();
 	});
 
 	it('renders custom meal entries with their specific times', () => {
+		vi.useFakeTimers();
 		const todayStr = '2026-05-10';
 		vi.setSystemTime(new Date(`${todayStr}T12:00:00Z`));
 
@@ -97,9 +108,11 @@ describe('MealPlannerPage', () => {
 		expect(screen.getByText('Midnight Snack')).toBeInTheDocument();
 		expect(screen.getByText('23:30')).toBeInTheDocument();
 		expect(screen.getAllByText(/Sear-Roasted Chicken Thighs/i).length).toBeGreaterThan(0);
+		vi.useRealTimers();
 	});
 
 	it('navigates between weeks', () => {
+		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
 
@@ -109,15 +122,17 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		const nextButton = screen.getByText('Next Week');
+		const nextButton = screen.getByRole('button', { name: /^Next$/i });
 		fireEvent.click(nextButton);
 
 		expect(mockNavigate).toHaveBeenCalledWith({
 			search: { date: '2026-05-17' },
 		});
+		vi.useRealTimers();
 	});
 
-	it('disables "Previous Week" on current week without data', () => {
+	it('disables "Previous" on current week without data', () => {
+		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
 
@@ -127,11 +142,13 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		const prevButton = screen.getByText('Previous Week');
+		const prevButton = screen.getByRole('button', { name: /^Previous$/i });
 		expect(prevButton).toBeDisabled();
+		vi.useRealTimers();
 	});
 
-	it('enables "Previous Week" on current week WITH data in previous week', () => {
+	it('enables "Previous" on current week WITH data in previous week', () => {
+		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
 
@@ -147,11 +164,13 @@ describe('MealPlannerPage', () => {
 			</Provider>,
 		);
 
-		const prevButton = screen.getByText('Previous Week');
+		const prevButton = screen.getByRole('button', { name: /^Previous$/i });
 		expect(prevButton).not.toBeDisabled();
+		vi.useRealTimers();
 	});
 
 	it('respects user defined default times', () => {
+		vi.useFakeTimers();
 		const today = new Date('2026-05-13T12:00:00Z');
 		vi.setSystemTime(today);
 
@@ -174,5 +193,20 @@ describe('MealPlannerPage', () => {
 		expect(screen.getAllByText('08:30').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('13:30').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('19:30').length).toBeGreaterThan(0);
+		vi.useRealTimers();
+	});
+
+	it('shares the current week when the share button is clicked', async () => {
+		render(
+			<Provider>
+				<MealPlannerPage />
+			</Provider>,
+		);
+
+		const shareButton = screen.getByText('Share Week');
+		fireEvent.click(shareButton);
+
+		expect(navigator.clipboard.writeText).toHaveBeenCalled();
+		expect(await screen.findByText('Copied Link!')).toBeInTheDocument();
 	});
 });

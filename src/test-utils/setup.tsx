@@ -9,6 +9,16 @@ afterEach(() => {
 	cleanup();
 });
 
+// Mock navigator.clipboard
+if (typeof navigator !== 'undefined') {
+	Object.defineProperty(navigator, 'clipboard', {
+		configurable: true,
+		value: {
+			writeText: vi.fn().mockResolvedValue(undefined),
+		},
+	});
+}
+
 // Surgical Mocks for Local UI Primitives
 export const TriggerMock = ({ children, render }: any) => {
 	if (render) {
@@ -135,6 +145,7 @@ vi.mock('lucide-react', () => {
 		Plus: MockIcon,
 		Search: MockIcon,
 		Settings: MockIcon,
+		Share2: MockIcon,
 		ShoppingCart: MockIcon,
 		Trash2: MockIcon,
 	};
